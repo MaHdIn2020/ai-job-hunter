@@ -2,14 +2,18 @@ name: Job Search
 
 on:
   workflow_dispatch:
+
   schedule:
     - cron: "0 */6 * * *"
 
 jobs:
+
   search-jobs:
+
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -24,4 +28,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run job scraper
-        run: python app.py
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+        run: |
+          python app.py
