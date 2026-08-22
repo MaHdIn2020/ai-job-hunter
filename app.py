@@ -1,6 +1,7 @@
 import os
 import json
 import hashlib
+import requests
 from datetime import datetime, timezone
 
 import gspread
@@ -32,15 +33,12 @@ worksheet = spreadsheet.sheet1
 
 
 # ============================================================
-# SEARCH CONFIGURATION
+# STAGE 1 CONFIGURATION
 # ============================================================
 
 SEARCH_TERMS = [
 
-    # -------------------------
-    # Group A: Core AI / ML
-    # -------------------------
-
+    # Core AI / ML
     "machine learning engineer",
     "machine learning intern",
     "machine learning trainee",
@@ -50,10 +48,7 @@ SEARCH_TERMS = [
     "artificial intelligence engineer",
     "artificial intelligence intern",
 
-    # -------------------------
-    # Group B: Junior / Fresher
-    # -------------------------
-
+    # Junior / Fresher
     "junior machine learning engineer",
     "junior AI engineer",
     "graduate machine learning engineer",
@@ -63,10 +58,7 @@ SEARCH_TERMS = [
     "ML engineer fresher",
     "AI engineer fresher",
 
-    # -------------------------
-    # Group C: Research
-    # -------------------------
-
+    # Research
     "AI research assistant",
     "machine learning research assistant",
     "AI research intern",
@@ -74,28 +66,52 @@ SEARCH_TERMS = [
     "research intern AI",
 ]
 
-
-# Only these job sources for Stage 1.
-# We will handle Facebook separately in Stage 2.
 SITES = [
     "linkedin",
     "indeed",
     "google"
 ]
 
-
 LOCATION = "Dhaka, Bangladesh"
 
 RESULTS_PER_SEARCH = 15
 
-HOURS_OLD = 168  # 7 days
+HOURS_OLD = 168
 
 
 # ============================================================
-# TITLE FILTER
+# STAGE 2 FACEBOOK CONFIGURATION
 # ============================================================
 
-# Words that indicate the job is relevant.
+FACEBOOK_QUERIES = [
+
+    # Core AI / ML
+    'site:facebook.com "AI Engineer" "Dhaka"',
+    'site:facebook.com "Machine Learning Engineer" "Dhaka"',
+    'site:facebook.com "Artificial Intelligence Engineer" "Dhaka"',
+
+    # Intern / Trainee
+    'site:facebook.com "AI Intern" "Dhaka"',
+    'site:facebook.com "Machine Learning Intern" "Dhaka"',
+    'site:facebook.com "AI Trainee" "Dhaka"',
+    'site:facebook.com "Machine Learning Trainee" "Bangladesh"',
+
+    # Research
+    'site:facebook.com "AI Research Intern" Bangladesh',
+    'site:facebook.com "Machine Learning Research Intern" Bangladesh',
+    'site:facebook.com "AI Research Assistant" Bangladesh',
+
+    # Facebook groups
+    'site:facebook.com/groups "AI jobs" Bangladesh',
+    'site:facebook.com/groups "machine learning jobs" Bangladesh',
+    'site:facebook.com/groups "AI internship" Bangladesh',
+]
+
+
+# ============================================================
+# FILTER CONFIGURATION
+# ============================================================
+
 TARGET_KEYWORDS = [
 
     "machine learning",
@@ -116,7 +132,6 @@ TARGET_KEYWORDS = [
     "ml research",
 
     "research assistant",
-
     "research intern",
 
     "computer vision",
@@ -124,11 +139,9 @@ TARGET_KEYWORDS = [
 
     "nlp",
     "natural language processing",
-
 ]
 
 
-# Words that indicate the job is too senior or managerial.
 EXCLUDED_KEYWORDS = [
 
     "senior",
@@ -148,11 +161,9 @@ EXCLUDED_KEYWORDS = [
 
     "vice president",
     "vp ",
-
 ]
 
 
-# Words that are good signs for a fresher.
 FRESHER_KEYWORDS = [
 
     "intern",
@@ -171,45 +182,51 @@ FRESHER_KEYWORDS = [
 
     "research assistant",
     "research intern",
-
 ]
 
 
 # ============================================================
-# HELPER FUNCTIONS
+# GENERAL HELPERS
 # ============================================================
 
 def clean_text(value):
-    """Convert NaN/None to an empty string."""
 
     if value is None:
         return ""
 
-    if pd.isna(value):
-        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except:
+        pass
 
     return str(value).strip()
 
 
 def create_job_id(row):
-    """
-    Create a stable unique ID.
 
-    Priority:
-    1. Job URL
-    2. Title + company + location
-    """
-
-    job_url = clean_text(row.get("job_url"))
+    job_url = clean_text(
+        row.get("job_url")
+    )
 
     if job_url:
+
         unique_string = job_url.lower()
 
     else:
+
         unique_string = "|".join([
-            clean_text(row.get("title")).lower(),
-            clean_text(row.get("company")).lower(),
-            clean_text(row.get("location")).lower(),
+            clean_text(
+                row.get("title")
+            ).lower(),
+
+            clean_text(
+                row.get("company")
+            ).lower(),
+
+            clean_text(
+                row.get("location")
+            ).lower(),
         ])
 
     return hashlib.sha256(
@@ -218,64 +235,50 @@ def create_job_id(row):
 
 
 def is_relevant_title(title):
-    """
-    Keep only AI/ML-related positions.
-    """
 
     title = clean_text(title).lower()
 
     if not title:
         return False
 
-    # First check whether the title contains
-    # something AI/ML related.
-    has_target_keyword = any(
+    has_target = any(
         keyword in title
         for keyword in TARGET_KEYWORDS
     )
 
-    if not has_target_keyword:
+    if not has_target:
         return False
 
-    # Then remove senior/managerial positions.
-    has_excluded_keyword = any(
+    has_excluded = any(
         keyword in title
         for keyword in EXCLUDED_KEYWORDS
     )
 
-    if has_excluded_keyword:
+    if has_excluded:
         return False
 
     return True
 
 
 def classify_fresher_friendliness(title):
-    """
-    Determine whether the position appears suitable
-    for a fresh graduate.
-    """
 
     title = clean_text(title).lower()
 
-    if any(keyword in title for keyword in FRESHER_KEYWORDS):
+    if any(
+        keyword in title
+        for keyword in FRESHER_KEYWORDS
+    ):
         return "YES"
 
     return "MAYBE"
 
 
 def relevance_score(title):
-    """
-    Simple Stage-1 relevance score.
-
-    AI/ML title gets a high score.
-    Fresher-related titles get additional points.
-    """
 
     title = clean_text(title).lower()
 
     score = 0
 
-    # Core AI/ML
     if "machine learning" in title:
         score += 50
 
@@ -288,7 +291,6 @@ def relevance_score(title):
     if "ml engineer" in title:
         score += 50
 
-    # Related AI fields
     if "deep learning" in title:
         score += 40
 
@@ -298,11 +300,9 @@ def relevance_score(title):
     if "nlp" in title:
         score += 40
 
-    # Research
     if "research" in title:
         score += 20
 
-    # Fresher friendly
     if any(
         keyword in title
         for keyword in FRESHER_KEYWORDS
@@ -313,27 +313,28 @@ def relevance_score(title):
 
 
 # ============================================================
-# SEARCH
+# STAGE 1
+# JOB BOARD SEARCH
 # ============================================================
 
-print("=" * 60)
-print("AI / ML JOB HUNTER")
-print("=" * 60)
+print("=" * 70)
+print("AI JOB HUNTER")
+print("=" * 70)
 
-print(f"Location: {LOCATION}")
-print(f"Search terms: {len(SEARCH_TERMS)}")
-print(f"Sources: {', '.join(SITES)}")
 print()
-
+print("STAGE 1: Job boards")
+print("-" * 70)
 
 all_jobs = []
 
-
-for index, search_term in enumerate(SEARCH_TERMS, start=1):
+for index, search_term in enumerate(
+    SEARCH_TERMS,
+    start=1
+):
 
     print(
         f"[{index}/{len(SEARCH_TERMS)}] "
-        f"Searching: {search_term}"
+        f"{search_term}"
     )
 
     try:
@@ -351,16 +352,16 @@ for index, search_term in enumerate(SEARCH_TERMS, start=1):
             hours_old=HOURS_OLD,
 
             verbose=0,
-
         )
 
         if jobs is not None and not jobs.empty:
 
             print(
-                f"    Found {len(jobs)} raw results"
+                f"    Raw results: {len(jobs)}"
             )
 
             jobs["search_term"] = search_term
+            jobs["source_type"] = "Job Board"
 
             all_jobs.append(jobs)
 
@@ -371,26 +372,206 @@ for index, search_term in enumerate(SEARCH_TERMS, start=1):
     except Exception as e:
 
         print(
-            f"    Search failed: {search_term}"
+            f"    Search failed: {e}"
         )
 
-        print(
-            f"    Reason: {e}"
-        )
-
-        # IMPORTANT:
-        # One failed search should not kill
-        # the entire workflow.
         continue
 
 
 # ============================================================
-# COMBINE SEARCH RESULTS
+# STAGE 2
+# FACEBOOK DISCOVERY
+# ============================================================
+
+print()
+print("STAGE 2: Facebook discovery")
+print("-" * 70)
+
+
+def search_facebook(query):
+
+    api_key = os.environ.get(
+        "SERPER_API_KEY"
+    )
+
+    if not api_key:
+
+        print(
+            "SERPER_API_KEY not found. "
+            "Skipping Facebook."
+        )
+
+        return []
+
+    url = "https://google.serper.dev/search"
+
+    headers = {
+        "X-API-KEY": api_key,
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "q": query,
+        "gl": "bd",
+        "hl": "en",
+        "num": 10,
+    }
+
+    try:
+
+        response = requests.post(
+            url,
+            headers=headers,
+            json=payload,
+            timeout=30,
+        )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        return data.get(
+            "organic",
+            []
+        )
+
+    except Exception as e:
+
+        print(
+            f"    Facebook search failed: {e}"
+        )
+
+        return []
+
+
+facebook_jobs = []
+
+
+for index, query in enumerate(
+    FACEBOOK_QUERIES,
+    start=1
+):
+
+    print(
+        f"[FB {index}/{len(FACEBOOK_QUERIES)}]"
+    )
+
+    print(
+        f"    {query}"
+    )
+
+    results = search_facebook(
+        query
+    )
+
+    print(
+        f"    Search results: {len(results)}"
+    )
+
+    for result in results:
+
+        title = clean_text(
+            result.get("title")
+        )
+
+        link = clean_text(
+            result.get("link")
+        )
+
+        snippet = clean_text(
+            result.get("snippet")
+        )
+
+        # Only Facebook results
+        if "facebook.com" not in link.lower():
+            continue
+
+        # Create a temporary job object
+        # so our existing filters can work.
+        facebook_job = {
+
+            "title": title,
+
+            "company": "",
+
+            "location": "Dhaka, Bangladesh",
+
+            "date_posted": "",
+
+            "job_url": link,
+
+            "site": "Facebook",
+
+            "job_type": "",
+
+            "search_term": query,
+
+            "snippet": snippet,
+
+            "source_type": "Facebook",
+
+        }
+
+        # Apply the SAME AI/ML filter
+        if not is_relevant_title(title):
+
+            # Search snippets sometimes contain
+            # the relevant job title rather than
+            # the result title.
+            combined_text = (
+                title + " " + snippet
+            ).lower()
+
+            has_target = any(
+                keyword in combined_text
+                for keyword in TARGET_KEYWORDS
+            )
+
+            has_excluded = any(
+                keyword in combined_text
+                for keyword in EXCLUDED_KEYWORDS
+            )
+
+            if not has_target or has_excluded:
+
+                continue
+
+        facebook_jobs.append(
+            facebook_job
+        )
+
+
+print()
+print(
+    f"Facebook relevant results: "
+    f"{len(facebook_jobs)}"
+)
+
+
+# ============================================================
+# CONVERT FACEBOOK RESULTS TO DATAFRAME
+# ============================================================
+
+if facebook_jobs:
+
+    facebook_df = pd.DataFrame(
+        facebook_jobs
+    )
+
+    all_jobs.append(
+        facebook_df
+    )
+
+
+# ============================================================
+# COMBINE EVERYTHING
 # ============================================================
 
 if not all_jobs:
 
-    print("\nNo jobs were collected.")
+    print()
+    print("No jobs collected.")
+
     raise SystemExit(0)
 
 
@@ -399,14 +580,16 @@ jobs = pd.concat(
     ignore_index=True
 )
 
+
 print()
 print(
-    f"Total raw jobs collected: {len(jobs)}"
+    f"Total collected from all sources: "
+    f"{len(jobs)}"
 )
 
 
 # ============================================================
-# REMOVE DUPLICATES FROM THIS RUN
+# CREATE JOB IDs
 # ============================================================
 
 jobs["job_id"] = jobs.apply(
@@ -414,7 +597,12 @@ jobs["job_id"] = jobs.apply(
     axis=1
 )
 
-before_dedup = len(jobs)
+
+# ============================================================
+# REMOVE DUPLICATES
+# ============================================================
+
+before = len(jobs)
 
 jobs = jobs.drop_duplicates(
     subset=["job_id"]
@@ -422,36 +610,31 @@ jobs = jobs.drop_duplicates(
 
 print(
     f"Duplicates removed: "
-    f"{before_dedup - len(jobs)}"
-)
-
-print(
-    f"Unique jobs: {len(jobs)}"
+    f"{before - len(jobs)}"
 )
 
 
 # ============================================================
-# AI / ML TITLE FILTER
+# APPLY AI/ML FILTER TO JOB BOARD RESULTS
 # ============================================================
 
 before_filter = len(jobs)
 
 jobs = jobs[
-    jobs["title"].apply(is_relevant_title)
+    jobs["title"].apply(
+        is_relevant_title
+    )
 ].copy()
+
 
 print(
     f"Non-AI/ML jobs removed: "
     f"{before_filter - len(jobs)}"
 )
 
-print(
-    f"Relevant AI/ML jobs: {len(jobs)}"
-)
-
 
 # ============================================================
-# ADD SCORES
+# ADD CLASSIFICATION
 # ============================================================
 
 jobs["fresher_friendly"] = jobs[
@@ -459,6 +642,7 @@ jobs["fresher_friendly"] = jobs[
 ].apply(
     classify_fresher_friendliness
 )
+
 
 jobs["ai_ml_relevance"] = jobs[
     "title"
@@ -468,14 +652,16 @@ jobs["ai_ml_relevance"] = jobs[
 
 
 # ============================================================
-# SORT BEST JOBS FIRST
+# SORT
 # ============================================================
 
 jobs = jobs.sort_values(
+
     by=[
         "fresher_friendly",
         "ai_ml_relevance"
     ],
+
     ascending=[
         True,
         False
@@ -484,7 +670,7 @@ jobs = jobs.sort_values(
 
 
 # ============================================================
-# READ EXISTING GOOGLE SHEET
+# READ GOOGLE SHEET
 # ============================================================
 
 existing_rows = worksheet.get_all_values()
@@ -502,14 +688,15 @@ if len(existing_rows) > 1:
             )
 
 
+print()
 print(
-    f"Existing jobs in Google Sheet: "
+    f"Existing jobs in Sheet: "
     f"{len(existing_ids)}"
 )
 
 
 # ============================================================
-# PREPARE NEW JOBS
+# PREPARE NEW ROWS
 # ============================================================
 
 new_rows = []
@@ -529,11 +716,9 @@ for _, job in jobs.iterrows():
         job.get("job_id")
     )
 
-    # Already in Google Sheets
     if job_id in existing_ids:
         continue
 
-    # Duplicate within this run
     if job_id in seen_this_run:
         continue
 
@@ -582,19 +767,29 @@ for _, job in jobs.iterrows():
     new_rows.append([
 
         job_id,
+
         title,
+
         company,
+
         location,
+
         date_posted,
+
         job_url,
+
         source,
+
         job_type,
+
         found_date,
+
         "To Apply",
 
-        # New fields
         fresher,
+
         relevance,
+
         search_term,
 
     ])
@@ -607,14 +802,16 @@ for _, job in jobs.iterrows():
 if new_rows:
 
     worksheet.append_rows(
+
         new_rows,
+
         value_input_option="USER_ENTERED"
     )
 
     print()
     print(
-        f"Added {len(new_rows)} NEW jobs "
-        f"to Google Sheets."
+        f"NEW jobs added: "
+        f"{len(new_rows)}"
     )
 
 else:
@@ -626,6 +823,6 @@ else:
 
 
 print()
-print("=" * 60)
-print("SEARCH COMPLETED")
-print("=" * 60)
+print("=" * 70)
+print("JOB HUNTER COMPLETED")
+print("=" * 70)
