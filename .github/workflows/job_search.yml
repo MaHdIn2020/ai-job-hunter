@@ -31,5 +31,6 @@ jobs:
         env:
           GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
         run: |
           python app.py
