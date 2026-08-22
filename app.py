@@ -41,7 +41,7 @@ FACEBOOK_RETENTION_DAYS = 30
 # Otherwise your Sheet will be erased every 6 hours.
 # ------------------------------------------------------------
 
-WIPE_SHEET_ON_START = True
+WIPE_SHEET_ON_START = False
 
 
 # ============================================================
