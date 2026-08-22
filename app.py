@@ -1,4 +1,5 @@
 import os
+import json
 import hashlib
 from datetime import datetime, timezone
 
@@ -16,7 +17,7 @@ SCOPES = [
 ]
 
 credentials = Credentials.from_service_account_info(
-    os.environ["GOOGLE_CREDENTIALS_JSON"],
+    json.loads(os.environ["GOOGLE_CREDENTIALS_JSON"]),
     scopes=SCOPES
 )
 
