@@ -35,7 +35,7 @@ FEEDBACK_FILE = "data/data/feedback.json"
 #
 # If TRUE, the entire Google Sheet will be cleared.
 #
-WIPE_SHEET_ON_START = True
+WIPE_SHEET_ON_START = False
 
 
 # ============================================================
