@@ -51,3 +51,27 @@ jobs:
           git diff --cached --quiet || git commit -m "Update job hunter feedback"
 
           git push
+      - name: Commit feedback
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      
+          mkdir -p data
+      
+          if [ ! -f data/feedback.json ]; then
+            echo '{"not_related":[],"related":[]}' > data/feedback.json
+          fi
+      
+          git add data/feedback.json
+      
+          if git diff --cached --quiet; then
+            echo "No feedback changes to commit."
+            exit 0
+          fi
+      
+          git commit -m "Update job feedback"
+      
+          git fetch origin main
+          git rebase origin/main
+      
+          git push origin HEAD:main
