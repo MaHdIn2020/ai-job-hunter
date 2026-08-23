@@ -1,10 +1,14 @@
 name: Job Search
 
 on:
+
   workflow_dispatch:
 
   schedule:
     - cron: "0 */6 * * *"
+
+permissions:
+  contents: write
 
 jobs:
 
@@ -16,6 +20,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -34,3 +40,14 @@ jobs:
           SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
         run: |
           python app.py
+
+      - name: Save feedback memory
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/feedback.json
+
+          git diff --cached --quiet || git commit -m "Update job hunter feedback"
+
+          git push
