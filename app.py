@@ -27,7 +27,7 @@ JOB_BOARD_HOURS_OLD = 168
 FACEBOOK_RETENTION_DAYS = 30
 
 # Feedback file
-FEEDBACK_FILE = "data/feedback.json"
+FEEDBACK_FILE = "data/data/feedback.json"
 
 # IMPORTANT:
 #
