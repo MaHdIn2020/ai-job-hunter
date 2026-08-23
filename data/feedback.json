@@ -1,4 +1,490 @@
 {
-  "rejected_jobs": [],
-  "learned_patterns": []
+  "rejected_jobs": [
+    {
+      "job_title": "We're Hiring: Python Instructor Are you passionate about ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/100094718169707/posts/were-hiring-python-instructorare-you-passionate-about-python-and-love-sharing-yo/921260704374527/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.671312+00:00"
+    },
+    {
+      "job_title": "مركز شباب عايدة Aida Youth Center المسمى الوظيفي Coding ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/graduated.Unit.nablus/posts/%D9%85%D8%B1%D9%83%D8%B2-%D8%B4%D8%A8%D8%A7%D8%A8-%D8%B9%D8%A7%D9%8A%D8%AF%D8%A9-aida-youth-center-%D8%A7%D9%84%D9%85%D8%B3%D9%85%D9%89-%D8%A7%D9%84%D9%88%D8%B8%D9%8A%D9%81%D9%8A-coding-teacher-%D8%A7%D9%84%D9%88%D8%B5%D9%81-%D8%A7%D9%84%D9%88%D8%B8%D9%8A%D9%81%D9%8Aabo/1393003802934365/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.671472+00:00"
+    },
+    {
+      "job_title": "WE'RE HIRING! STEM TUTOR Join the Nexgen ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/nexgenhub/posts/were-hiring-stem-tutorjoin-the-nexgen-educational-hub-teamare-you-passionate-abo/1729684839166399/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.671536+00:00"
+    },
+    {
+      "job_title": "Eduzone Tech hiring computer science and robotics ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/jobz2u/posts/computer_science_trainers-robotics_trainers-hiringeduzone_tech-is-expanding-its-/122122081347342206/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.671616+00:00"
+    },
+    {
+      "job_title": "Job Opportunity at STEMON BD! Position: Programming ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/ulabcso/posts/job-opportunity-at-stemon-bdposition-programming-robotics-instructor-growth-to-c/1647828640678581/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.671701+00:00"
+    },
+    {
+      "job_title": "ICT Lab Instructor job opening at Vajre India Technologies",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/vajreindiatechnologies/posts/-now-hiring-ict-lab-instructor-position-ict-lab-instructor-salary-18000month-ctc/1471112598376191/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.671796+00:00"
+    },
+    {
+      "job_title": "🚀 **We're Hiring | AI Creative Instructor** AMIT Learning is ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/groups/n8narabic/posts/4499205777074658/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.671909+00:00"
+    },
+    {
+      "job_title": "STEM Innovation Nepal hiring STEAM tutor for hands-on ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/61580416431658/posts/were-hiring-steam-tutor-stem-innovation-nepal-pvt-ltdat-stem-innovation-nepal-we/122140464435013881/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.672052+00:00"
+    },
+    {
+      "job_title": "Skill building trainer job in Hatiya Noakhali for women",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/duopportunities/posts/job-%F0%9D%9F%AC%F0%9D%9F%AF-%F0%9D%97%B1%F0%9D%97%AE%F0%9D%98%86%F0%9D%98%80-%F0%9D%97%B9%F0%9D%97%B2%F0%9D%97%B3%F0%9D%98%81-%F0%9D%98%81%F0%9D%97%BC-%F0%9D%97%AE%F0%9D%97%BD%F0%9D%97%BD%F0%9D%97%B9%F0%9D%98%86praan-participatory-research-action-network-is-looking-/122126475207268319/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.672204+00:00"
+    },
+    {
+      "job_title": "Proteck Computer Institute hiring part time programming ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/proteckcomputers/posts/-were-hiring-part-time-programming-trainerproteck-computer-institute-is-looking-/1666040282197600/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.672365+00:00"
+    },
+    {
+      "job_title": "Job Openings: La Grandee International College Hiring ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/lagrandee2000/posts/-were-hiringjoin-our-team-and-be-part-of-an-institution-committed-to-academic-ex/1904383340911553/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.672538+00:00"
+    },
+    {
+      "job_title": "Red Team Volunteer Internship Instructor job at Cyberster",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/groups/sqalearningacademy/posts/4432634283619176/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.672720+00:00"
+    },
+    {
+      "job_title": "We are hiring , join our team and build a brighter future with ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/iSystemsKch/posts/we-are-hiring-join-our-team-and-build-a-brighter-future-with-i-systems-colleges/1667277532065088/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.672921+00:00"
+    },
+    {
+      "job_title": "IT Networking Instructor job at Technological University of the ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/herson.ramos.98/posts/to-all-interested-applicants-we-are-hiring-it-networking-instructor/28718869937714628/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.673166+00:00"
+    },
+    {
+      "job_title": "**WE ARE HIRING: FEMALE IT TEACHER** 💻✨ ** ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/Snamsschool/posts/snams-hiring-open/122141970033051789/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.673405+00:00"
+    },
+    {
+      "job_title": "Send your CV to ghed@bac.edu.my #Hiring #ITLecturer # ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/100069830430916/posts/we-are-hiring-it-lecturersare-you-passionate-about-information-technology-educat/1419958750341793/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.673649+00:00"
+    },
+    {
+      "job_title": "📢 We're Hiring | Implementation & Training Specialist",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/groups/132976126799167/posts/27608144505522292/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.673908+00:00"
+    },
+    {
+      "job_title": "Your next career opportunity could be here! Cloud Media is ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/cloudmediaind/posts/-your-next-career-opportunity-could-be-here-cloud-media-is-hiring-a-digital-mark/1556215756545905/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.674191+00:00"
+    },
+    {
+      "job_title": "Deliver high-quality training programs in data analysis ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/Management.Professionals.IMP/posts/were-hiring-data-analysis-trainerare-you-an-experienced-data-analyst-who-knows-h/1364655185754967/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.674584+00:00"
+    },
+    {
+      "job_title": "Ed-Tech Africa is hiring",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/groups/1493137884233190/posts/4451627898384159/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.674893+00:00"
+    },
+    {
+      "job_title": "Training Officer Job Opening at IIT Palakkad's Techin",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/techiniitpkd/posts/%F0%9D%90%96%F0%9D%90%9E%F0%9D%90%AB%F0%9D%90%9E-%F0%9D%90%87%F0%9D%90%A2%F0%9D%90%AB%F0%9D%90%A2%F0%9D%90%A7%F0%9D%90%A0-%F0%9D%90%93%F0%9D%90%AB%F0%9D%90%9A%F0%9D%90%A2%F0%9D%90%A7%F0%9D%90%A2%F0%9D%90%A7%F0%9D%90%A0-%F0%9D%90%8E%F0%9D%90%9F%F0%9D%90%9F%F0%9D%90%A2%F0%9D%90%9C%F0%9D%90%9E%F0%9D%90%ABtechnology-innovation-foundation-of-iit-palakkad-tec/1017665154403569/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.675219+00:00"
+    },
+    {
+      "job_title": "MASTER TRAINERS (Mechanical Engineering) AMASS ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/amass.skill/posts/we-are-hiring-master-trainers-mechanical-engineeringamass-skill-ventures-pvt-ltd/1552743700198954/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.675555+00:00"
+    },
+    {
+      "job_title": "Vitaskills Academy hiring IT trainer for data analytics in ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/vita.s.10297/posts/were-hiring-it-trainer-data-analytics-join-vitaskills-academyare-you-passionate-/1457662269741829/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.675934+00:00"
+    },
+    {
+      "job_title": "Computer science instructor job in Addis Ababa (Aug 2026)",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/awubshet/posts/-job-title-computer-science-instructorjob-type-on-site-permanent-full-timework-l/29518660537722996/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.676418+00:00"
+    },
+    {
+      "job_title": "Ready to turn your passion for coding into real-world experience ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/IEEENUSB/posts/ready-to-turn-your-passion-for-coding-into-real-world-experiencejoin-the-ieee-el/1367471828810979/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.677075+00:00"
+    },
+    {
+      "job_title": "Remote AI engineering jobs for 4.0 GPA students with ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/groups/254058768789426/posts/2117835922411692/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.677730+00:00"
+    },
+    {
+      "job_title": "**HIRING|REMOTE - DATA SCIENTIST ** * 3+ years ...",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/groups/1407434203194440/posts/2073502156587638/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.678411+00:00"
+    },
+    {
+      "job_title": "Hiring: Full Stack Development Instructor Location",
+      "company": "",
+      "location": "Bangladesh",
+      "job_url": "https://www.facebook.com/groups/933099092568785/posts/1101214022423957/",
+      "reason": "Other",
+      "rejected_at": "2026-08-23T11:02:17.678987+00:00"
+    }
+  ],
+  "rejected_by_reason": {
+    "Wrong Location": [],
+    "Not AI/ML": [],
+    "Not Instructor/Teaching": [],
+    "Too Senior": [],
+    "Wrong Job Type": [],
+    "Seeking Job, Not Hiring": [],
+    "Not a Job Post": [],
+    "Duplicate": [],
+    "Other": [
+      {
+        "job_title": "We're Hiring: Python Instructor Are you passionate about ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/100094718169707/posts/were-hiring-python-instructorare-you-passionate-about-python-and-love-sharing-yo/921260704374527/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.671312+00:00"
+      },
+      {
+        "job_title": "مركز شباب عايدة Aida Youth Center المسمى الوظيفي Coding ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/graduated.Unit.nablus/posts/%D9%85%D8%B1%D9%83%D8%B2-%D8%B4%D8%A8%D8%A7%D8%A8-%D8%B9%D8%A7%D9%8A%D8%AF%D8%A9-aida-youth-center-%D8%A7%D9%84%D9%85%D8%B3%D9%85%D9%89-%D8%A7%D9%84%D9%88%D8%B8%D9%8A%D9%81%D9%8A-coding-teacher-%D8%A7%D9%84%D9%88%D8%B5%D9%81-%D8%A7%D9%84%D9%88%D8%B8%D9%8A%D9%81%D9%8Aabo/1393003802934365/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.671472+00:00"
+      },
+      {
+        "job_title": "WE'RE HIRING! STEM TUTOR Join the Nexgen ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/nexgenhub/posts/were-hiring-stem-tutorjoin-the-nexgen-educational-hub-teamare-you-passionate-abo/1729684839166399/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.671536+00:00"
+      },
+      {
+        "job_title": "Eduzone Tech hiring computer science and robotics ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/jobz2u/posts/computer_science_trainers-robotics_trainers-hiringeduzone_tech-is-expanding-its-/122122081347342206/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.671616+00:00"
+      },
+      {
+        "job_title": "Job Opportunity at STEMON BD! Position: Programming ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/ulabcso/posts/job-opportunity-at-stemon-bdposition-programming-robotics-instructor-growth-to-c/1647828640678581/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.671701+00:00"
+      },
+      {
+        "job_title": "ICT Lab Instructor job opening at Vajre India Technologies",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/vajreindiatechnologies/posts/-now-hiring-ict-lab-instructor-position-ict-lab-instructor-salary-18000month-ctc/1471112598376191/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.671796+00:00"
+      },
+      {
+        "job_title": "🚀 **We're Hiring | AI Creative Instructor** AMIT Learning is ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/groups/n8narabic/posts/4499205777074658/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.671909+00:00"
+      },
+      {
+        "job_title": "STEM Innovation Nepal hiring STEAM tutor for hands-on ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/61580416431658/posts/were-hiring-steam-tutor-stem-innovation-nepal-pvt-ltdat-stem-innovation-nepal-we/122140464435013881/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.672052+00:00"
+      },
+      {
+        "job_title": "Skill building trainer job in Hatiya Noakhali for women",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/duopportunities/posts/job-%F0%9D%9F%AC%F0%9D%9F%AF-%F0%9D%97%B1%F0%9D%97%AE%F0%9D%98%86%F0%9D%98%80-%F0%9D%97%B9%F0%9D%97%B2%F0%9D%97%B3%F0%9D%98%81-%F0%9D%98%81%F0%9D%97%BC-%F0%9D%97%AE%F0%9D%97%BD%F0%9D%97%BD%F0%9D%97%B9%F0%9D%98%86praan-participatory-research-action-network-is-looking-/122126475207268319/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.672204+00:00"
+      },
+      {
+        "job_title": "Proteck Computer Institute hiring part time programming ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/proteckcomputers/posts/-were-hiring-part-time-programming-trainerproteck-computer-institute-is-looking-/1666040282197600/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.672365+00:00"
+      },
+      {
+        "job_title": "Job Openings: La Grandee International College Hiring ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/lagrandee2000/posts/-were-hiringjoin-our-team-and-be-part-of-an-institution-committed-to-academic-ex/1904383340911553/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.672538+00:00"
+      },
+      {
+        "job_title": "Red Team Volunteer Internship Instructor job at Cyberster",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/groups/sqalearningacademy/posts/4432634283619176/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.672720+00:00"
+      },
+      {
+        "job_title": "We are hiring , join our team and build a brighter future with ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/iSystemsKch/posts/we-are-hiring-join-our-team-and-build-a-brighter-future-with-i-systems-colleges/1667277532065088/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.672921+00:00"
+      },
+      {
+        "job_title": "IT Networking Instructor job at Technological University of the ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/herson.ramos.98/posts/to-all-interested-applicants-we-are-hiring-it-networking-instructor/28718869937714628/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.673166+00:00"
+      },
+      {
+        "job_title": "**WE ARE HIRING: FEMALE IT TEACHER** 💻✨ ** ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/Snamsschool/posts/snams-hiring-open/122141970033051789/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.673405+00:00"
+      },
+      {
+        "job_title": "Send your CV to ghed@bac.edu.my #Hiring #ITLecturer # ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/100069830430916/posts/we-are-hiring-it-lecturersare-you-passionate-about-information-technology-educat/1419958750341793/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.673649+00:00"
+      },
+      {
+        "job_title": "📢 We're Hiring | Implementation & Training Specialist",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/groups/132976126799167/posts/27608144505522292/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.673908+00:00"
+      },
+      {
+        "job_title": "Your next career opportunity could be here! Cloud Media is ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/cloudmediaind/posts/-your-next-career-opportunity-could-be-here-cloud-media-is-hiring-a-digital-mark/1556215756545905/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.674191+00:00"
+      },
+      {
+        "job_title": "Deliver high-quality training programs in data analysis ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/Management.Professionals.IMP/posts/were-hiring-data-analysis-trainerare-you-an-experienced-data-analyst-who-knows-h/1364655185754967/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.674584+00:00"
+      },
+      {
+        "job_title": "Ed-Tech Africa is hiring",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/groups/1493137884233190/posts/4451627898384159/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.674893+00:00"
+      },
+      {
+        "job_title": "Training Officer Job Opening at IIT Palakkad's Techin",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/techiniitpkd/posts/%F0%9D%90%96%F0%9D%90%9E%F0%9D%90%AB%F0%9D%90%9E-%F0%9D%90%87%F0%9D%90%A2%F0%9D%90%AB%F0%9D%90%A2%F0%9D%90%A7%F0%9D%90%A0-%F0%9D%90%93%F0%9D%90%AB%F0%9D%90%9A%F0%9D%90%A2%F0%9D%90%A7%F0%9D%90%A2%F0%9D%90%A7%F0%9D%90%A0-%F0%9D%90%8E%F0%9D%90%9F%F0%9D%90%9F%F0%9D%90%A2%F0%9D%90%9C%F0%9D%90%9E%F0%9D%90%ABtechnology-innovation-foundation-of-iit-palakkad-tec/1017665154403569/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.675219+00:00"
+      },
+      {
+        "job_title": "MASTER TRAINERS (Mechanical Engineering) AMASS ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/amass.skill/posts/we-are-hiring-master-trainers-mechanical-engineeringamass-skill-ventures-pvt-ltd/1552743700198954/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.675555+00:00"
+      },
+      {
+        "job_title": "Vitaskills Academy hiring IT trainer for data analytics in ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/vita.s.10297/posts/were-hiring-it-trainer-data-analytics-join-vitaskills-academyare-you-passionate-/1457662269741829/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.675934+00:00"
+      },
+      {
+        "job_title": "Computer science instructor job in Addis Ababa (Aug 2026)",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/awubshet/posts/-job-title-computer-science-instructorjob-type-on-site-permanent-full-timework-l/29518660537722996/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.676418+00:00"
+      },
+      {
+        "job_title": "Ready to turn your passion for coding into real-world experience ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/IEEENUSB/posts/ready-to-turn-your-passion-for-coding-into-real-world-experiencejoin-the-ieee-el/1367471828810979/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.677075+00:00"
+      },
+      {
+        "job_title": "Remote AI engineering jobs for 4.0 GPA students with ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/groups/254058768789426/posts/2117835922411692/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.677730+00:00"
+      },
+      {
+        "job_title": "**HIRING|REMOTE - DATA SCIENTIST ** * 3+ years ...",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/groups/1407434203194440/posts/2073502156587638/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.678411+00:00"
+      },
+      {
+        "job_title": "Hiring: Full Stack Development Instructor Location",
+        "company": "",
+        "location": "Bangladesh",
+        "job_url": "https://www.facebook.com/groups/933099092568785/posts/1101214022423957/",
+        "reason": "Other",
+        "rejected_at": "2026-08-23T11:02:17.678987+00:00"
+      }
+    ]
+  },
+  "learned_patterns": {
+    "Wrong Location": [],
+    "Not AI/ML": [],
+    "Not Instructor/Teaching": [],
+    "Too Senior": [],
+    "Wrong Job Type": [],
+    "Seeking Job, Not Hiring": [],
+    "Not a Job Post": [],
+    "Duplicate": [],
+    "Other": [
+      "are hiring",
+      "with ..."
+    ]
+  },
+  "rejected_locations": [],
+  "statistics": {
+    "Wrong Location": 0,
+    "Not AI/ML": 0,
+    "Not Instructor/Teaching": 0,
+    "Too Senior": 0,
+    "Wrong Job Type": 0,
+    "Seeking Job, Not Hiring": 0,
+    "Not a Job Post": 0,
+    "Duplicate": 0,
+    "Other": 28
+  }
 }
