@@ -26,23 +26,16 @@ JOB_BOARD_HOURS_OLD = 168
 # Facebook jobs/posts older than this are removed
 FACEBOOK_RETENTION_DAYS = 30
 
+# Feedback file
+FEEDBACK_FILE = "data/feedback.json"
 
-# ============================================================
-# IMPORTANT
-# ============================================================
+# IMPORTANT:
 #
-# TRUE:
-#   Completely clears the Google Sheet before the first run.
+# Keep this FALSE during normal operation.
 #
-# FALSE:
-#   Keeps existing jobs and only adds new jobs.
+# If TRUE, the entire Google Sheet will be cleared.
 #
-# Set TRUE for ONE run after installing this version.
-# Then change it to FALSE.
-#
-# ============================================================
-
-WIPE_SHEET_ON_START = False
+WIPE_SHEET_ON_START = True
 
 
 # ============================================================
@@ -61,14 +54,11 @@ credentials = Credentials.from_service_account_info(
     scopes=SCOPES
 )
 
-
 client = gspread.authorize(credentials)
-
 
 spreadsheet = client.open_by_key(
     os.environ["GOOGLE_SHEET_ID"]
 )
-
 
 worksheet = spreadsheet.sheet1
 
@@ -80,38 +70,54 @@ worksheet = spreadsheet.sheet1
 HEADERS = [
 
     "Job ID",
-
     "Job Title",
-
     "Company",
-
     "Location",
-
     "Date Posted",
-
     "Job URL",
-
     "Source",
-
     "Job Type",
-
     "Date Found",
 
+    # Application status
     "Status",
 
+    # NEW:
+    # Human review of scraper relevance
+    "Review Status",
+
     "Fresher Friendly",
-
     "AI/ML Relevance",
-
     "Search Query",
-
     "Location Verification",
-
     "Facebook Confidence",
-
     "Post Classification",
-
     "Snippet",
+
+]
+
+
+# ============================================================
+# REVIEW STATUSES
+# ============================================================
+
+REVIEW_PENDING = "Pending Review"
+REVIEW_RELEVANT = "Relevant"
+REVIEW_NOT_RELATED = "Not Related"
+
+
+# ============================================================
+# APPLICATION STATUSES
+# ============================================================
+
+APPLICATION_STATUSES = [
+
+    "To Apply",
+    "Applied",
+    "Assessment",
+    "Interview",
+    "Rejected",
+    "Offer",
 
 ]
 
@@ -169,121 +175,176 @@ def count_keywords(text, keywords):
 AI_ML_KEYWORDS = [
 
     "artificial intelligence",
-
     "artificial-intelligence",
 
     "ai engineer",
-
     "ai developer",
-
     "ai intern",
-
     "ai internship",
-
     "ai trainee",
-
     "ai research",
-
     "ai researcher",
-
     "ai scientist",
 
     "machine learning",
-
     "machine-learning",
-
     "machine learning engineer",
-
     "machine learning intern",
-
     "machine learning internship",
-
     "machine learning trainee",
-
     "machine learning developer",
-
     "machine learning researcher",
-
     "machine learning scientist",
 
     "ml engineer",
-
     "ml developer",
-
     "ml intern",
-
     "ml internship",
-
     "ml trainee",
-
     "ml researcher",
 
     "deep learning",
-
     "deep-learning",
-
     "deep learning engineer",
-
     "deep learning intern",
 
     "computer vision",
-
     "computer-vision",
-
     "computer vision engineer",
-
     "computer vision intern",
 
     "natural language processing",
-
     "natural-language processing",
-
     "nlp engineer",
-
     "nlp intern",
-
     "nlp developer",
 
     "generative ai",
-
     "generative-ai",
-
     "genai",
-
     "gen ai",
 
     "large language model",
-
     "large language models",
-
     "llm",
-
     "llm engineer",
-
     "llm intern",
-
     "llm developer",
+
+    "ai agent",
+    "ai agents",
+    "agentic ai",
+    "generative ai engineer",
 
 ]
 
 
 # ============================================================
-# OPTIONAL RELATED ROLES
+# RELATED AI ROLES
 # ============================================================
 
 RELATED_AI_ROLES = [
 
     "data scientist",
-
     "data science intern",
-
     "data science trainee",
 
     "research assistant",
-
     "ai research assistant",
-
     "machine learning research assistant",
+
+    "data analyst",
+    "data analyst intern",
+
+]
+
+
+# ============================================================
+# CODING / IT INSTRUCTOR KEYWORDS
+# ============================================================
+
+INSTRUCTOR_KEYWORDS = [
+
+    "coding instructor",
+    "coding trainer",
+    "coding teacher",
+    "coding mentor",
+
+    "programming instructor",
+    "programming trainer",
+    "programming teacher",
+    "programming mentor",
+
+    "software instructor",
+    "software trainer",
+
+    "it instructor",
+    "it trainer",
+    "it teacher",
+
+    "computer instructor",
+    "computer trainer",
+
+    "computer science instructor",
+    "computer science teacher",
+    "computer science trainer",
+
+    "technology instructor",
+    "technology trainer",
+
+    "technical instructor",
+    "technical trainer",
+
+    "programming teaching assistant",
+    "coding teaching assistant",
+    "computer science teaching assistant",
+    "teaching assistant programming",
+
+    "ai instructor",
+    "ai trainer",
+    "ai teacher",
+
+    "machine learning instructor",
+    "machine learning trainer",
+    "ml instructor",
+    "ml trainer",
+
+    "python instructor",
+    "python trainer",
+
+    "c++ instructor",
+    "c++ trainer",
+
+    "java instructor",
+    "java trainer",
+
+    "web development instructor",
+    "web development trainer",
+
+    "software development instructor",
+    "software development trainer",
+
+    "robotics instructor",
+    "robotics trainer",
+
+    "stem instructor",
+    "stem trainer",
+
+]
+
+
+# ============================================================
+# GENERAL EDUCATION / TEACHING SIGNALS
+# ============================================================
+
+EDUCATION_KEYWORDS = [
+
+    "instructor",
+    "trainer",
+    "teacher",
+    "mentor",
+    "teaching assistant",
+    "teaching associate",
 
 ]
 
@@ -295,32 +356,23 @@ RELATED_AI_ROLES = [
 FRESHER_KEYWORDS = [
 
     "intern",
-
     "internship",
-
     "trainee",
-
     "junior",
-
     "entry level",
-
     "entry-level",
-
     "graduate",
-
     "fresh graduate",
-
     "fresher",
-
     "new grad",
-
     "new graduate",
-
-    "entry-level",
-
     "research intern",
-
     "research assistant",
+
+    "teaching assistant",
+    "junior instructor",
+    "assistant instructor",
+    "assistant trainer",
 
 ]
 
@@ -332,89 +384,66 @@ FRESHER_KEYWORDS = [
 HIRING_KEYWORDS = [
 
     "we are hiring",
-
     "we're hiring",
 
     "we are looking for",
-
     "we're looking for",
 
     "our team is hiring",
-
     "our team is looking for",
 
     "hiring",
 
     "job opening",
-
     "job openings",
 
     "vacancy",
-
     "vacancies",
 
     "open position",
-
     "open positions",
 
     "position available",
-
     "positions available",
 
     "career opportunity",
-
     "career opportunities",
 
     "join our team",
-
     "join the team",
-
     "join us",
 
     "recruiting",
-
     "recruitment",
-
     "recruit",
 
     "apply now",
-
     "apply here",
 
     "send your cv",
-
     "send cv",
 
     "submit your cv",
-
     "submit cv",
 
     "send resume",
-
     "submit resume",
 
     "applications are open",
-
     "applications open",
 
     "candidates can apply",
-
     "candidates are invited",
 
     "looking for candidates",
-
     "seeking candidates",
 
     "we need",
-
     "we need a",
-
     "we need an",
 
     "hiring for",
-
     "hiring an",
-
     "hiring a",
 
 ]
@@ -423,91 +452,61 @@ HIRING_KEYWORDS = [
 # ============================================================
 # APPLICANT / JOB-SEEKER SIGNALS
 # ============================================================
-#
-# These are extremely important.
-#
-# We DON'T want:
-#
-# "I am seeking a job"
-# "Looking for an AI job"
-# "I am looking for opportunities"
-#
-# Those are people searching for jobs, not employers.
-#
-# ============================================================
 
 APPLICANT_KEYWORDS = [
 
     "i am looking for a job",
-
     "i'm looking for a job",
 
     "i am looking for jobs",
-
     "i'm looking for jobs",
 
     "i am seeking a job",
-
     "i'm seeking a job",
 
     "i am seeking jobs",
-
     "i'm seeking jobs",
 
     "looking for a job",
-
     "looking for jobs",
 
     "seeking a job",
-
     "seeking jobs",
 
     "seeking employment",
-
     "looking for employment",
 
     "looking for work",
-
     "seeking work",
 
     "need a job",
-
     "need a job urgently",
-
     "need employment",
 
     "job seeker",
-
     "jobseeker",
 
     "actively looking for a job",
-
     "actively seeking a job",
 
     "open to work",
-
     "open for work",
 
     "available for work",
-
     "available for opportunities",
 
     "looking for opportunities",
-
     "seeking opportunities",
 
     "looking for an opportunity",
-
     "seeking an opportunity",
 
     "please help me find a job",
-
     "help me find a job",
 
     "can anyone help me find a job",
 
     "any job leads",
-
     "job leads",
 
 ]
@@ -520,13 +519,9 @@ APPLICANT_KEYWORDS = [
 NOISE_KEYWORDS = [
 
     "course",
-
     "courses",
 
-    "training",
-
     "training program",
-
     "training programme",
 
     "workshop",
@@ -538,13 +533,10 @@ NOISE_KEYWORDS = [
     "bootcamp",
 
     "certificate",
-
     "certification",
 
     "learn ai",
-
     "learn machine learning",
-
     "learn artificial intelligence",
 
     "tutorial",
@@ -554,7 +546,6 @@ NOISE_KEYWORDS = [
     "conference",
 
     "event",
-
     "events",
 
     "meetup",
@@ -562,17 +553,14 @@ NOISE_KEYWORDS = [
     "hackathon",
 
     "competition",
-
     "contest",
 
     "free class",
-
     "free course",
 
     "cohort",
 
     "enrollment",
-
     "enrolment",
 
     "scholarship",
@@ -587,37 +575,27 @@ NOISE_KEYWORDS = [
 SENIOR_KEYWORDS = [
 
     "senior",
-
     "sr.",
-
     "sr ",
 
     "lead",
-
     "principal",
 
     "staff engineer",
-
     "staff machine learning",
-
     "staff ai",
 
     "engineering manager",
-
     "product manager",
-
     "manager",
-
     "management",
 
     "director",
-
     "head of",
 
     "architect",
 
     "vice president",
-
     "vp ",
 
     "chief",
@@ -632,59 +610,42 @@ SENIOR_KEYWORDS = [
 BANGLADESH_LOCATIONS = [
 
     "bangladesh",
-
     "bangladeshi",
 
     "dhaka",
-
     "chattogram",
-
     "chittagong",
-
     "sylhet",
-
     "rajshahi",
-
     "khulna",
-
     "barisal",
-
+    "barishal",
     "rangpur",
-
     "mymensingh",
 
     "gazipur",
-
     "narayanganj",
 
     "cumilla",
-
     "comilla",
 
     "bogura",
 
     "cox's bazar",
-
     "cox bazar",
 
     "savar",
 
     "uttara",
-
     "mirpur",
 
     "banani",
-
     "gulshan",
-
     "motijheel",
-
     "dhanmondi",
 
     "bdt",
-
     "৳",
-
     "+880",
 
 ]
@@ -698,181 +659,139 @@ FOREIGN_LOCATIONS = [
 
     # USA
     "united states",
-
     "united states of america",
-
     "usa",
-
     "u.s.a",
-
     "u.s.",
-
     "us only",
-
     "us-based",
-
     "us based",
 
     "new york",
-
     "california",
-
     "texas",
-
     "florida",
-
     "washington dc",
-
     "san francisco",
-
     "los angeles",
-
     "chicago",
-
     "seattle",
-
     "boston",
-
     "new jersey",
 
     # Canada
     "canada",
-
     "canada only",
-
     "toronto",
-
     "vancouver",
-
     "ontario",
-
     "montreal",
 
     # UK
     "united kingdom",
-
     "uk only",
-
     "london",
-
     "england",
-
     "scotland",
-
     "manchester",
 
     # India
     "india",
-
     "india only",
-
     "pune",
-
     "mumbai",
-
     "bangalore",
-
     "bengaluru",
-
     "hyderabad",
-
     "delhi",
-
     "new delhi",
-
     "gurgaon",
-
     "gurugram",
-
     "noida",
-
     "chennai",
-
     "kolkata",
 
     # Sri Lanka
     "sri lanka",
-
     "colombo",
-
     "kandy",
 
     # Australia
     "australia",
-
     "sydney",
-
     "melbourne",
-
     "brisbane",
-
     "perth",
 
     # New Zealand
     "new zealand",
-
     "auckland",
 
     # Europe
     "germany",
-
     "berlin",
-
     "france",
-
     "paris",
-
     "netherlands",
-
     "amsterdam",
-
     "sweden",
-
     "stockholm",
-
     "denmark",
-
     "copenhagen",
-
     "norway",
-
     "oslo",
-
     "finland",
-
     "helsinki",
-
     "ireland",
-
     "dublin",
 
     # Middle East
     "dubai",
-
     "uae",
-
     "united arab emirates",
-
     "abu dhabi",
-
     "qatar",
-
     "doha",
-
     "saudi arabia",
-
     "riyadh",
 
     # Asia
     "singapore",
-
     "pakistan",
-
     "karachi",
-
     "lahore",
-
     "islamabad",
+
+]
+
+
+# ============================================================
+# STRONG FOREIGN CITIES
+# ============================================================
+
+STRONG_FOREIGN_LOCATIONS = [
+
+    "pune",
+    "mumbai",
+    "bangalore",
+    "bengaluru",
+    "hyderabad",
+    "delhi",
+    "new delhi",
+    "chennai",
+    "colombo",
+    "kandy",
+
+    "new york",
+    "california",
+    "texas",
+    "london",
+
+    "toronto",
+    "vancouver",
+
+    "sydney",
+    "melbourne",
 
 ]
 
@@ -884,75 +803,788 @@ FOREIGN_LOCATIONS = [
 REMOTE_KEYWORDS = [
 
     "remote",
-
     "fully remote",
-
     "remote position",
-
     "remote role",
-
     "remote job",
-
     "work from home",
-
     "wfh",
-
     "home based",
-
     "work-from-home",
 
 ]
 
 
 # ============================================================
-# NEGATIVE REMOTE / FOREIGN RESTRICTIONS
+# FOREIGN REMOTE RESTRICTIONS
 # ============================================================
 
 FOREIGN_REMOTE_RESTRICTIONS = [
 
     "us only",
-
     "usa only",
-
     "united states only",
-
     "us-based only",
-
     "us based only",
 
     "canada only",
-
     "uk only",
-
     "india only",
 
     "australia only",
-
     "europe only",
-
     "eu only",
 
     "must be located in the us",
-
     "must be based in the us",
 
     "must be located in usa",
-
     "must be based in usa",
 
     "must be located in india",
-
     "must be based in india",
 
     "must be located in canada",
-
     "must be based in canada",
 
     "must be located in uk",
-
     "must be based in uk",
 
 ]
+
+
+# ============================================================
+# JOB CATEGORY
+# ============================================================
+
+def detect_job_category(title, text):
+
+    title = normalize_text(title)
+    text = normalize_text(text)
+
+    if any(
+        keyword in title
+        for keyword in INSTRUCTOR_KEYWORDS
+    ):
+
+        return "Coding / IT Instructor"
+
+    if any(
+        keyword in text
+        for keyword in INSTRUCTOR_KEYWORDS
+    ):
+
+        return "Coding / IT Instructor"
+
+    if any(
+        keyword in title
+        for keyword in AI_ML_KEYWORDS
+    ):
+
+        return "AI / ML"
+
+    if any(
+        keyword in text
+        for keyword in AI_ML_KEYWORDS
+    ):
+
+        return "AI / ML"
+
+    if any(
+        keyword in text
+        for keyword in RELATED_AI_ROLES
+    ):
+
+        return "AI / Data / Research"
+
+    return ""
+
+
+# ============================================================
+# FEEDBACK SYSTEM
+# ============================================================
+
+GENERIC_FEEDBACK_WORDS = {
+
+    "engineer",
+    "engineering",
+    "developer",
+    "development",
+    "software",
+    "technology",
+    "technical",
+    "job",
+    "jobs",
+    "role",
+    "position",
+    "company",
+    "team",
+    "remote",
+    "dhaka",
+    "bangladesh",
+    "intern",
+    "internship",
+    "junior",
+    "trainee",
+    "entry",
+    "level",
+    "graduate",
+    "fresh",
+    "fresher",
+    "assistant",
+    "research",
+    "ai",
+    "ml",
+    "machine",
+    "learning",
+    "data",
+    "science",
+    "scientist",
+    "artificial",
+    "intelligence",
+    "coding",
+    "programming",
+    "instructor",
+    "trainer",
+    "teacher",
+    "mentor",
+    "computer",
+    "information",
+    "it",
+    "technology",
+
+}
+
+
+def ensure_feedback_directory():
+
+    directory = os.path.dirname(
+        FEEDBACK_FILE
+    )
+
+    if directory:
+
+        os.makedirs(
+            directory,
+            exist_ok=True
+        )
+
+
+def load_feedback():
+
+    ensure_feedback_directory()
+
+    if not os.path.exists(
+        FEEDBACK_FILE
+    ):
+
+        return {
+
+            "rejected_jobs": [],
+            "learned_patterns": [],
+
+        }
+
+
+    try:
+
+        with open(
+            FEEDBACK_FILE,
+            "r",
+            encoding="utf-8"
+        ) as file:
+
+            data = json.load(file)
+
+        if not isinstance(data, dict):
+
+            raise ValueError(
+                "Invalid feedback format"
+            )
+
+        data.setdefault(
+            "rejected_jobs",
+            []
+        )
+
+        data.setdefault(
+            "learned_patterns",
+            []
+        )
+
+        return data
+
+    except Exception as e:
+
+        print(
+            f"Could not load feedback: {e}"
+        )
+
+        return {
+
+            "rejected_jobs": [],
+            "learned_patterns": [],
+
+        }
+
+
+def save_feedback(feedback):
+
+    ensure_feedback_directory()
+
+    temporary_file = (
+        FEEDBACK_FILE + ".tmp"
+    )
+
+    with open(
+        temporary_file,
+        "w",
+        encoding="utf-8"
+    ) as file:
+
+        json.dump(
+            feedback,
+            file,
+            indent=2,
+            ensure_ascii=False
+        )
+
+    os.replace(
+        temporary_file,
+        FEEDBACK_FILE
+    )
+
+
+def tokenize_title(title):
+
+    title = normalize_text(
+        title
+    )
+
+    title = re.sub(
+        r"[^a-z0-9+#. ]+",
+        " ",
+        title
+    )
+
+    tokens = title.split()
+
+    return [
+
+        token
+
+        for token in tokens
+
+        if len(token) >= 3
+        and token not in GENERIC_FEEDBACK_WORDS
+
+    ]
+
+
+def generate_title_phrases(title):
+
+    tokens = tokenize_title(
+        title
+    )
+
+    phrases = []
+
+    # Two-word phrases
+    for i in range(
+        len(tokens) - 1
+    ):
+
+        phrase = (
+            tokens[i]
+            + " "
+            + tokens[i + 1]
+        )
+
+        phrases.append(
+            phrase
+        )
+
+    # Three-word phrases
+    for i in range(
+        len(tokens) - 2
+    ):
+
+        phrase = (
+            tokens[i]
+            + " "
+            + tokens[i + 1]
+            + " "
+            + tokens[i + 2]
+        )
+
+        phrases.append(
+            phrase
+        )
+
+    return phrases
+
+
+def learn_from_rejected_job(
+    feedback,
+    job_title,
+    company,
+    location,
+    url,
+):
+
+    normalized_title = normalize_text(
+        job_title
+    )
+
+    normalized_url = normalize_text(
+        url
+    )
+
+    if not normalized_title:
+
+        return
+
+
+    # Don't save the same rejection repeatedly
+    for rejected in feedback[
+        "rejected_jobs"
+    ]:
+
+        if (
+            normalize_text(
+                rejected.get(
+                    "job_url",
+                    ""
+                )
+            )
+            == normalized_url
+            and normalized_url
+        ):
+
+            return
+
+
+        if (
+            normalize_text(
+                rejected.get(
+                    "job_title",
+                    ""
+                )
+            )
+            == normalized_title
+            and normalize_text(
+                rejected.get(
+                    "company",
+                    ""
+                )
+            )
+            == normalize_text(
+                company
+            )
+        ):
+
+            return
+
+
+    feedback[
+        "rejected_jobs"
+    ].append({
+
+        "job_title":
+            clean_text(job_title),
+
+        "company":
+            clean_text(company),
+
+        "location":
+            clean_text(location),
+
+        "job_url":
+            clean_text(url),
+
+        "rejected_at":
+            datetime.now(
+                timezone.utc
+            ).isoformat(),
+
+    })
+
+
+    # ========================================================
+    # LEARN ONLY FROM REPEATED PHRASES
+    #
+    # We deliberately DO NOT learn individual words.
+    #
+    # Example:
+    #
+    # "Java Developer"
+    #
+    # does not make "Java" automatically bad.
+    #
+    # But repeated rejection of:
+    #
+    # "Java Developer"
+    # "Java Backend Developer"
+    # "Java Software Developer"
+    #
+    # can eventually create a useful pattern.
+    # ========================================================
+
+    all_titles = [
+
+        normalize_text(
+            item.get(
+                "job_title",
+                ""
+            )
+        )
+
+        for item in feedback[
+            "rejected_jobs"
+        ]
+
+    ]
+
+
+    phrase_counts = {}
+
+
+    for title in all_titles:
+
+        phrases = set(
+            generate_title_phrases(
+                title
+            )
+        )
+
+        for phrase in phrases:
+
+            phrase_counts[
+                phrase
+            ] = (
+                phrase_counts.get(
+                    phrase,
+                    0
+                )
+                + 1
+            )
+
+
+    learned = [
+
+        phrase
+
+        for phrase, count
+        in phrase_counts.items()
+
+        if count >= 2
+
+    ]
+
+
+    feedback[
+        "learned_patterns"
+    ] = sorted(
+        learned
+    )
+
+
+def feedback_rejection_score(
+    title,
+    company,
+    text,
+    feedback,
+):
+
+    title = normalize_text(
+        title
+    )
+
+    company = normalize_text(
+        company
+    )
+
+    text = normalize_text(
+        text
+    )
+
+
+    # Exact previously rejected title
+    for rejected in feedback[
+        "rejected_jobs"
+    ]:
+
+        rejected_title = normalize_text(
+            rejected.get(
+                "job_title",
+                ""
+            )
+        )
+
+        rejected_company = normalize_text(
+            rejected.get(
+                "company",
+                ""
+            )
+        )
+
+
+        if (
+            rejected_title
+            and title
+            == rejected_title
+        ):
+
+            # Exact same title is strong evidence
+            if (
+                not rejected_company
+                or not company
+                or rejected_company
+                == company
+            ):
+
+                return 100
+
+
+    # Learned repeated phrases
+    matched_patterns = [
+
+        pattern
+
+        for pattern in feedback[
+            "learned_patterns"
+        ]
+
+        if pattern in title
+        or pattern in text
+
+    ]
+
+
+    # We need at least one repeated pattern
+    # and do not let one weak pattern automatically
+    # destroy a potentially good job.
+    if matched_patterns:
+
+        return min(
+            len(matched_patterns) * 25,
+            75
+        )
+
+
+    return 0
+
+
+def process_review_feedback():
+
+    """
+    Reads Google Sheet rows.
+
+    If Review Status is:
+        Not Related
+
+    then:
+
+        1. Save it to feedback.json
+        2. Learn repeated title patterns
+        3. Remove it from the Google Sheet
+
+    Relevant and Pending Review rows remain untouched.
+    """
+
+    print()
+    print("=" * 70)
+    print("PROCESSING HUMAN FEEDBACK")
+    print("=" * 70)
+
+
+    rows = worksheet.get_all_values()
+
+
+    if len(rows) <= 1:
+
+        print(
+            "No existing jobs to review."
+        )
+
+        return
+
+
+    headers = rows[0]
+
+
+    try:
+
+        review_index = headers.index(
+            "Review Status"
+        )
+
+    except ValueError:
+
+        print(
+            "Review Status column not found."
+        )
+
+        return
+
+
+    # Column indexes
+    try:
+
+        job_id_index = headers.index(
+            "Job ID"
+        )
+
+        title_index = headers.index(
+            "Job Title"
+        )
+
+        company_index = headers.index(
+            "Company"
+        )
+
+        location_index = headers.index(
+            "Location"
+        )
+
+        url_index = headers.index(
+            "Job URL"
+        )
+
+    except ValueError:
+
+        print(
+            "Required columns missing."
+        )
+
+        return
+
+
+    feedback = load_feedback()
+
+
+    rows_to_delete = []
+
+
+    for row_number, row in enumerate(
+        rows[1:],
+        start=2
+    ):
+
+        if (
+            len(row)
+            <= review_index
+        ):
+
+            continue
+
+
+        review_status = normalize_text(
+            row[review_index]
+        )
+
+
+        if (
+            review_status
+            != normalize_text(
+                REVIEW_NOT_RELATED
+            )
+        ):
+
+            continue
+
+
+        title = (
+            row[title_index]
+            if len(row) > title_index
+            else ""
+        )
+
+        company = (
+            row[company_index]
+            if len(row) > company_index
+            else ""
+        )
+
+        location = (
+            row[location_index]
+            if len(row) > location_index
+            else ""
+        )
+
+        url = (
+            row[url_index]
+            if len(row) > url_index
+            else ""
+        )
+
+
+        print()
+        print(
+            "❌ HUMAN REJECTION:"
+        )
+
+        print(
+            f"   Title: {title}"
+        )
+
+        print(
+            f"   Company: {company}"
+        )
+
+
+        learn_from_rejected_job(
+
+            feedback,
+
+            title,
+
+            company,
+
+            location,
+
+            url,
+
+        )
+
+
+        rows_to_delete.append(
+            row_number
+        )
+
+
+    if rows_to_delete:
+
+        save_feedback(
+            feedback
+        )
+
+
+    # Delete from bottom to top
+    for row_number in reversed(
+        rows_to_delete
+    ):
+
+        worksheet.delete_rows(
+            row_number
+        )
+
+
+    print()
+    print(
+        f"Human rejected jobs: "
+        f"{len(rows_to_delete)}"
+    )
+
+    print(
+        f"Total feedback examples: "
+        f"{len(feedback['rejected_jobs'])}"
+    )
+
+    print(
+        f"Learned repeated patterns: "
+        f"{len(feedback['learned_patterns'])}"
+    )
 
 
 # ============================================================
@@ -975,17 +1607,65 @@ def setup_sheet():
             [HEADERS]
         )
 
-        print("Existing jobs deleted.")
+        print(
+            "Existing jobs deleted."
+        )
 
-    else:
+        return
 
-        existing_headers = worksheet.row_values(1)
 
-        if existing_headers != HEADERS:
+    existing_headers = worksheet.row_values(
+        1
+    )
 
-            worksheet.update(
-                "A1",
-                [HEADERS]
+
+    if not existing_headers:
+
+        worksheet.update(
+            "A1",
+            [HEADERS]
+        )
+
+        return
+
+
+    # ========================================================
+    # AUTOMATICALLY ADD NEW COLUMNS
+    # ========================================================
+
+    missing_headers = [
+
+        header
+
+        for header in HEADERS
+
+        if header not in existing_headers
+
+    ]
+
+
+    if missing_headers:
+
+        print()
+        print(
+            "Adding missing sheet columns:"
+        )
+
+
+        for header in missing_headers:
+
+            print(
+                f"  + {header}"
+            )
+
+            worksheet.update_cell(
+                1,
+                len(existing_headers) + 1,
+                header
+            )
+
+            existing_headers.append(
+                header
             )
 
 
@@ -1001,7 +1681,9 @@ def create_job_id(row):
 
     if url:
 
-        unique_value = url.lower().strip()
+        unique_value = (
+            url.lower().strip()
+        )
 
     else:
 
@@ -1021,24 +1703,31 @@ def create_job_id(row):
 
         ])
 
+
     return hashlib.sha256(
         unique_value.encode("utf-8")
     ).hexdigest()[:16]
 
 
 # ============================================================
-# AI/ML TITLE FILTER
+# AI/ML / INSTRUCTOR TITLE FILTER
 # ============================================================
 
-def is_ai_ml_title(title):
+def is_target_title(title):
 
-    title = normalize_text(title)
+    title = normalize_text(
+        title
+    )
+
 
     if not title:
+
         return False
 
-    ai_terms = [
 
+    target_terms = [
+
+        # AI / ML
         "ai engineer",
         "ai developer",
         "ai intern",
@@ -1068,11 +1757,73 @@ def is_ai_ml_title(title):
 
         "artificial intelligence",
 
+        # Instructor
+        "coding instructor",
+        "coding trainer",
+        "coding teacher",
+        "coding mentor",
+
+        "programming instructor",
+        "programming trainer",
+        "programming teacher",
+        "programming mentor",
+
+        "it instructor",
+        "it trainer",
+
+        "computer instructor",
+        "computer trainer",
+
+        "computer science instructor",
+        "computer science teacher",
+        "computer science trainer",
+
+        "technology instructor",
+        "technology trainer",
+
+        "technical instructor",
+        "technical trainer",
+
+        "programming teaching assistant",
+        "coding teaching assistant",
+        "computer science teaching assistant",
+
+        "ai instructor",
+        "ai trainer",
+
+        "machine learning instructor",
+        "machine learning trainer",
+
+        "ml instructor",
+        "ml trainer",
+
+        "python instructor",
+        "python trainer",
+
+        "c++ instructor",
+        "c++ trainer",
+
+        "java instructor",
+        "java trainer",
+
+        "web development instructor",
+        "web development trainer",
+
+        "software development instructor",
+        "software development trainer",
+
+        "robotics instructor",
+        "robotics trainer",
+
+        "stem instructor",
+        "stem trainer",
+
     ]
+
 
     return any(
         term in title
-        for term in ai_terms
+        for term in target_terms
     )
 
 
@@ -1082,37 +1833,52 @@ def is_ai_ml_title(title):
 
 def classify_fresher(text):
 
-    text = normalize_text(text)
+    text = normalize_text(
+        text
+    )
+
 
     if any(
         keyword in text
         for keyword in FRESHER_KEYWORDS
     ):
+
         return "YES"
+
 
     return "MAYBE"
 
 
 # ============================================================
-# AI/ML SCORE
+# AI/ML / TARGET RELEVANCE SCORE
 # ============================================================
 
 def relevance_score(text):
 
-    text = normalize_text(text)
+    text = normalize_text(
+        text
+    )
+
 
     score = 0
+
 
     strong_terms = [
 
         "machine learning",
         "machine-learning",
         "artificial intelligence",
+
         "ai engineer",
         "machine learning engineer",
         "ml engineer",
 
+        "coding instructor",
+        "programming instructor",
+        "it instructor",
+
     ]
+
 
     medium_terms = [
 
@@ -1120,21 +1886,31 @@ def relevance_score(text):
         "computer vision",
         "natural language processing",
         "nlp",
+
         "generative ai",
         "genai",
         "llm",
 
+        "coding trainer",
+        "programming trainer",
+        "computer science instructor",
+
     ]
+
 
     for term in strong_terms:
 
         if term in text:
+
             score += 20
+
 
     for term in medium_terms:
 
         if term in text:
+
             score += 10
+
 
     return min(
         score,
@@ -1148,41 +1924,56 @@ def relevance_score(text):
 
 def analyze_location(text):
 
-    text = normalize_text(text)
+    text = normalize_text(
+        text
+    )
+
 
     bd_matches = [
 
         location
 
-        for location in BANGLADESH_LOCATIONS
+        for location
+        in BANGLADESH_LOCATIONS
 
         if location in text
 
     ]
+
 
     foreign_matches = [
 
         location
 
-        for location in FOREIGN_LOCATIONS
+        for location
+        in FOREIGN_LOCATIONS
 
         if location in text
 
     ]
 
+
     return {
-        "bangladesh": bd_matches,
-        "foreign": foreign_matches
+
+        "bangladesh":
+            bd_matches,
+
+        "foreign":
+            foreign_matches,
+
     }
 
 
 # ============================================================
-# CHECK REMOTE
+# REMOTE CHECK
 # ============================================================
 
 def contains_remote(text):
 
-    text = normalize_text(text)
+    text = normalize_text(
+        text
+    )
+
 
     return any(
         keyword in text
@@ -1191,59 +1982,69 @@ def contains_remote(text):
 
 
 # ============================================================
-# CHECK FOREIGN REMOTE RESTRICTION
+# FOREIGN REMOTE CHECK
 # ============================================================
 
-def has_foreign_remote_restriction(text):
+def has_foreign_remote_restriction(
+    text
+):
 
-    text = normalize_text(text)
+    text = normalize_text(
+        text
+    )
+
 
     return any(
         phrase in text
-        for phrase in FOREIGN_REMOTE_RESTRICTIONS
+        for phrase
+        in FOREIGN_REMOTE_RESTRICTIONS
     )
 
 
 # ============================================================
-# CHECK IF POST IS FROM JOB SEEKER
+# JOB SEEKER CHECK
 # ============================================================
 
 def is_job_seeker_post(text):
 
-    text = normalize_text(text)
+    text = normalize_text(
+        text
+    )
 
-    matches = [
+
+    return [
 
         keyword
 
-        for keyword in APPLICANT_KEYWORDS
+        for keyword
+        in APPLICANT_KEYWORDS
 
         if keyword in text
 
     ]
 
-    return matches
-
 
 # ============================================================
-# CHECK EMPLOYER SIGNAL
+# EMPLOYER SIGNAL
 # ============================================================
 
 def employer_hiring_signal(text):
 
-    text = normalize_text(text)
+    text = normalize_text(
+        text
+    )
 
-    matches = [
+
+    return [
 
         keyword
 
-        for keyword in HIRING_KEYWORDS
+        for keyword
+        in HIRING_KEYWORDS
 
         if keyword in text
 
     ]
-
-    return matches
 
 
 # ============================================================
@@ -1252,7 +2053,8 @@ def employer_hiring_signal(text):
 
 def classify_facebook_post(
     title,
-    snippet
+    snippet,
+    feedback,
 ):
 
     title_text = normalize_text(
@@ -1273,8 +2075,47 @@ def classify_facebook_post(
 
 
     # ========================================================
-    # STEP 1
-    # IS THIS A JOB-SEEKER POST?
+    # HUMAN FEEDBACK
+    # ========================================================
+
+    feedback_score = (
+        feedback_rejection_score(
+
+            title_text,
+
+            "",
+
+            full_text,
+
+            feedback,
+
+        )
+    )
+
+
+    if feedback_score >= 100:
+
+        return {
+
+            "accepted": False,
+
+            "confidence": 0,
+
+            "classification":
+                "PREVIOUSLY REJECTED",
+
+            "location":
+                "REJECTED",
+
+            "reason":
+                "Previously rejected "
+                "job pattern",
+
+        }
+
+
+    # ========================================================
+    # JOB SEEKER
     # ========================================================
 
     applicant_matches = (
@@ -1282,6 +2123,7 @@ def classify_facebook_post(
             full_text
         )
     )
+
 
     if applicant_matches:
 
@@ -1305,8 +2147,7 @@ def classify_facebook_post(
 
 
     # ========================================================
-    # STEP 2
-    # IS THIS A REAL JOB?
+    # EMPLOYER SIGNAL
     # ========================================================
 
     hiring_matches = (
@@ -1337,64 +2178,46 @@ def classify_facebook_post(
 
 
     # ========================================================
-    # STEP 3
-    # IS IT AI/ML?
+    # TARGET CATEGORY
     # ========================================================
 
-    ai_matches = [
-
-        keyword
-
-        for keyword in AI_ML_KEYWORDS
-
-        if keyword in full_text
-
-    ]
+    category = detect_job_category(
+        title_text,
+        full_text
+    )
 
 
-    related_matches = [
+    if not category:
 
-        keyword
+        return {
 
-        for keyword in RELATED_AI_ROLES
+            "accepted": False,
 
-        if keyword in full_text
+            "confidence": 0,
 
-    ]
+            "classification":
+                "NOT TARGET ROLE",
 
+            "location":
+                "REJECTED",
 
-    if not ai_matches:
+            "reason":
+                "Not AI/ML/Data or "
+                "Coding/IT education role",
 
-        if not related_matches:
-
-            return {
-
-                "accepted": False,
-
-                "confidence": 0,
-
-                "classification":
-                    "NOT AI/ML",
-
-                "location":
-                    "REJECTED",
-
-                "reason":
-                    "No AI/ML role detected",
-
-            }
+        }
 
 
     # ========================================================
-    # STEP 4
-    # REMOVE COURSES / TRAINING / EVENTS
+    # NOISE
     # ========================================================
 
     noise_matches = [
 
         keyword
 
-        for keyword in NOISE_KEYWORDS
+        for keyword
+        in NOISE_KEYWORDS
 
         if keyword in full_text
 
@@ -1422,15 +2245,15 @@ def classify_facebook_post(
 
 
     # ========================================================
-    # STEP 5
-    # REJECT SENIOR ROLES
+    # SENIOR JOB
     # ========================================================
 
     senior_matches = [
 
         keyword
 
-        for keyword in SENIOR_KEYWORDS
+        for keyword
+        in SENIOR_KEYWORDS
 
         if keyword in title_text
 
@@ -1458,13 +2281,13 @@ def classify_facebook_post(
 
 
     # ========================================================
-    # STEP 6
     # LOCATION
     # ========================================================
 
     location = analyze_location(
         full_text
     )
+
 
     bd_locations = location[
         "bangladesh"
@@ -1475,25 +2298,7 @@ def classify_facebook_post(
     ]
 
 
-    # ========================================================
-    # HARD RULE:
-    # FOREIGN CITY/COUNTRY IN JOB POST = REJECT
-    #
-    # This specifically catches:
-    #
-    # Pune
-    # Colombo
-    # USA
-    # London
-    # Toronto
-    #
-    # ========================================================
-
     if foreign_locations:
-
-        # If foreign location exists AND there is no
-        # explicit Bangladesh job-location evidence,
-        # reject it.
 
         if not bd_locations:
 
@@ -1510,45 +2315,16 @@ def classify_facebook_post(
                     "FOREIGN",
 
                 "reason":
-                    "Actual job appears "
-                    "to be outside Bangladesh",
+                    "Job appears to be "
+                    "outside Bangladesh",
 
             }
 
 
-        # Even if Bangladesh appears, we don't
-        # automatically trust it.
-        #
-        # If a specific foreign city appears,
-        # reject unless Bangladesh is explicitly
-        # described as the job location.
-
-        foreign_strong = [
-
-            "pune",
-            "mumbai",
-            "bangalore",
-            "bengaluru",
-            "hyderabad",
-            "delhi",
-            "new delhi",
-            "chennai",
-            "colombo",
-            "kandy",
-            "new york",
-            "california",
-            "texas",
-            "london",
-            "toronto",
-            "vancouver",
-            "sydney",
-            "melbourne",
-
-        ]
-
         if any(
             city in full_text
-            for city in foreign_strong
+            for city
+            in STRONG_FOREIGN_LOCATIONS
         ):
 
             return {
@@ -1571,8 +2347,7 @@ def classify_facebook_post(
 
 
     # ========================================================
-    # STEP 7
-    # REMOTE JOBS
+    # REMOTE
     # ========================================================
 
     remote = contains_remote(
@@ -1605,9 +2380,6 @@ def classify_facebook_post(
             }
 
 
-        # Remote is acceptable ONLY if Bangladesh
-        # is explicitly mentioned.
-
         if not bd_locations:
 
             return {
@@ -1630,8 +2402,7 @@ def classify_facebook_post(
 
 
     # ========================================================
-    # STEP 8
-    # NON-REMOTE JOBS
+    # NON-REMOTE
     # ========================================================
 
     if not remote:
@@ -1658,43 +2429,54 @@ def classify_facebook_post(
 
 
     # ========================================================
-    # STEP 9
     # CONFIDENCE
     # ========================================================
 
     confidence = 0
 
 
-    # AI/ML
+    category_matches = [
+
+        keyword
+
+        for keyword
+        in AI_ML_KEYWORDS
+
+        + INSTRUCTOR_KEYWORDS
+
+        + RELATED_AI_ROLES
+
+        if keyword in full_text
+
+    ]
+
+
     confidence += min(
-        len(ai_matches) * 10,
+        len(category_matches) * 10,
         30
     )
 
 
-    # Hiring signal
     confidence += min(
         len(hiring_matches) * 10,
         30
     )
 
 
-    # Bangladesh
     if bd_locations:
 
         confidence += 30
 
 
-    # Fresher
     if any(
         keyword in full_text
-        for keyword in FRESHER_KEYWORDS
+        for keyword
+        in FRESHER_KEYWORDS
     ):
 
         confidence += 10
 
 
-    # Remote
     if remote:
 
         confidence += 5
@@ -1705,10 +2487,6 @@ def classify_facebook_post(
         100
     )
 
-
-    # ========================================================
-    # FINAL ACCEPTANCE
-    # ========================================================
 
     if confidence < 60:
 
@@ -1739,14 +2517,18 @@ def classify_facebook_post(
             confidence,
 
         "classification":
-            "BANGLADESH AI/ML JOB",
+            "BANGLADESH "
+            + category.upper(),
 
         "location":
             "BANGLADESH",
 
         "reason":
             "Verified Bangladesh "
-            "AI/ML hiring signal",
+            "target-role hiring signal",
+
+        "category":
+            category,
 
     }
 
@@ -1802,7 +2584,6 @@ def serper_search(query):
         "num":
             10,
 
-        # Search approximately last month
         "tbs":
             "qdr:m",
 
@@ -1851,6 +2632,7 @@ def serper_search(query):
 
 FACEBOOK_QUERIES = [
 
+    # AI / ML
     'site:facebook.com "AI Engineer" "Bangladesh" hiring',
 
     'site:facebook.com "AI Engineer" "Dhaka" hiring',
@@ -1883,11 +2665,39 @@ FACEBOOK_QUERIES = [
 
     'site:facebook.com "Generative AI Intern" "Bangladesh"',
 
+    # Coding / IT education
+    'site:facebook.com "Coding Instructor" "Bangladesh" hiring',
+
+    'site:facebook.com "Coding Instructor" "Dhaka" hiring',
+
+    'site:facebook.com "Programming Instructor" "Bangladesh" hiring',
+
+    'site:facebook.com "Programming Trainer" "Bangladesh" hiring',
+
+    'site:facebook.com "IT Instructor" "Bangladesh" hiring',
+
+    'site:facebook.com "IT Trainer" "Bangladesh" hiring',
+
+    'site:facebook.com "Computer Science Instructor" "Bangladesh"',
+
+    'site:facebook.com "Python Instructor" "Bangladesh"',
+
+    'site:facebook.com "Coding Mentor" "Bangladesh" hiring',
+
+    'site:facebook.com "Teaching Assistant" "programming" "Bangladesh"',
+
+    # Groups
     'site:facebook.com/groups "AI jobs" "Bangladesh"',
 
     'site:facebook.com/groups "AI internship" "Bangladesh"',
 
     'site:facebook.com/groups "machine learning jobs" "Bangladesh"',
+
+    'site:facebook.com/groups "programming jobs" "Bangladesh"',
+
+    'site:facebook.com/groups "IT jobs" "Bangladesh"',
+
+    'site:facebook.com/groups "coding instructor" "Bangladesh"',
 
 ]
 
@@ -1902,6 +2712,9 @@ def collect_facebook_jobs():
     print("=" * 70)
     print("STAGE 2: STRICT FACEBOOK SEARCH")
     print("=" * 70)
+
+
+    feedback = load_feedback()
 
 
     facebook_jobs = []
@@ -1951,7 +2764,6 @@ def collect_facebook_jobs():
             )
 
 
-            # Only Facebook
             if (
                 "facebook.com"
                 not in link.lower()
@@ -1976,8 +2788,13 @@ def collect_facebook_jobs():
 
 
             analysis = classify_facebook_post(
+
                 title,
-                snippet
+
+                snippet,
+
+                feedback,
+
             )
 
 
@@ -2007,6 +2824,11 @@ def collect_facebook_jobs():
 
             print(
                 f"     {title}"
+            )
+
+            print(
+                f"     Category: "
+                f"{analysis.get('category', '')}"
             )
 
             print(
@@ -2054,7 +2876,8 @@ def collect_facebook_jobs():
                     if contains_remote(
                         combined_text
                     )
-                    else "On-site/Unspecified",
+                    else
+                    "On-site/Unspecified",
 
                 "search_term":
                     query,
@@ -2115,70 +2938,85 @@ def collect_facebook_jobs():
 
 
 # ============================================================
-# JOB BOARD SEARCH
+# JOB BOARD SEARCH TERMS
 # ============================================================
 
 SEARCH_TERMS = [
 
+    # AI / ML
     "machine learning engineer",
-
     "machine learning intern",
-
     "machine learning trainee",
-
     "machine learning developer",
-
     "machine learning research intern",
-
     "machine learning research assistant",
 
     "AI engineer",
-
     "AI intern",
-
     "AI trainee",
-
     "AI developer",
 
     "artificial intelligence engineer",
-
     "artificial intelligence intern",
-
     "artificial intelligence trainee",
 
     "junior AI engineer",
-
     "junior machine learning engineer",
 
     "entry level AI engineer",
-
     "entry level machine learning",
 
     "graduate AI engineer",
-
     "graduate machine learning engineer",
 
     "AI engineer fresher",
-
     "ML engineer fresher",
 
     "AI research intern",
-
     "AI research assistant",
 
     "deep learning engineer",
-
     "deep learning intern",
 
     "computer vision engineer",
-
     "computer vision intern",
 
     "NLP engineer",
-
     "NLP intern",
 
     "natural language processing intern",
+
+    "generative AI engineer",
+    "generative AI intern",
+
+    "LLM engineer",
+    "LLM intern",
+
+    # Data
+    "data scientist",
+    "data science intern",
+    "data science trainee",
+    "data analyst",
+
+    # Coding / IT education
+    "coding instructor",
+    "coding trainer",
+    "programming instructor",
+    "programming trainer",
+    "IT instructor",
+    "IT trainer",
+    "computer instructor",
+    "computer science instructor",
+    "computer science teacher",
+    "programming mentor",
+    "coding mentor",
+    "Python instructor",
+    "C++ instructor",
+    "web development instructor",
+    "software instructor",
+    "AI instructor",
+    "machine learning instructor",
+    "robotics instructor",
 
 ]
 
@@ -2191,6 +3029,10 @@ JOB_BOARD_SITES = [
 
 ]
 
+
+# ============================================================
+# JOB BOARD SEARCH
+# ============================================================
 
 def collect_job_board_jobs():
 
@@ -2307,7 +3149,7 @@ def filter_job_board_jobs(
 
 
     # ========================================================
-    # AI/ML TITLE FILTER
+    # TARGET TITLE FILTER
     # ========================================================
 
     before = len(jobs)
@@ -2315,19 +3157,19 @@ def filter_job_board_jobs(
 
     jobs = jobs[
         jobs["title"].apply(
-            is_ai_ml_title
+            is_target_title
         )
     ].copy()
 
 
     print(
-        f"Non-AI/ML removed: "
+        f"Non-target jobs removed: "
         f"{before - len(jobs)}"
     )
 
 
     # ========================================================
-    # REMOVE SENIOR JOBS
+    # SENIOR JOBS
     # ========================================================
 
     before = len(jobs)
@@ -2338,6 +3180,7 @@ def filter_job_board_jobs(
         title = normalize_text(
             title
         )
+
 
         return any(
             keyword in title
@@ -2359,7 +3202,7 @@ def filter_job_board_jobs(
 
 
     # ========================================================
-    # LOCATION FILTER
+    # LOCATION
     # ========================================================
 
     before = len(jobs)
@@ -2376,21 +3219,20 @@ def filter_job_board_jobs(
 
         if not location:
 
-            # JobSpy sometimes returns blank
-            # location. Since your target is
-            # Bangladesh, don't accept it.
             return False
 
 
         bd = any(
             keyword in location
-            for keyword in BANGLADESH_LOCATIONS
+            for keyword
+            in BANGLADESH_LOCATIONS
         )
 
 
         foreign = any(
             keyword in location
-            for keyword in FOREIGN_LOCATIONS
+            for keyword
+            in FOREIGN_LOCATIONS
         )
 
 
@@ -2439,74 +3281,33 @@ def prepare_jobs(
     )
 
 
-    if "job_url" not in jobs.columns:
+    required_defaults = {
 
-        jobs["job_url"] = ""
+        "job_url": "",
+        "title": "",
+        "company": "",
+        "location": "",
+        "date_posted": "",
+        "site": "",
+        "job_type": "",
+        "search_term": "",
+        "snippet": "",
+        "fresher_friendly": "",
+        "ai_ml_relevance": "",
+        "facebook_confidence": "",
+        "location_verification": "",
+        "post_classification": "",
 
-
-    if "title" not in jobs.columns:
-
-        jobs["title"] = ""
-
-
-    if "company" not in jobs.columns:
-
-        jobs["company"] = ""
-
-
-    if "location" not in jobs.columns:
-
-        jobs["location"] = ""
-
-
-    if "date_posted" not in jobs.columns:
-
-        jobs["date_posted"] = ""
+    }
 
 
-    if "site" not in jobs.columns:
+    for column, default in (
+        required_defaults.items()
+    ):
 
-        jobs["site"] = ""
+        if column not in jobs.columns:
 
-
-    if "job_type" not in jobs.columns:
-
-        jobs["job_type"] = ""
-
-
-    if "search_term" not in jobs.columns:
-
-        jobs["search_term"] = ""
-
-
-    if "snippet" not in jobs.columns:
-
-        jobs["snippet"] = ""
-
-
-    if "fresher_friendly" not in jobs.columns:
-
-        jobs["fresher_friendly"] = ""
-
-
-    if "ai_ml_relevance" not in jobs.columns:
-
-        jobs["ai_ml_relevance"] = ""
-
-
-    if "facebook_confidence" not in jobs.columns:
-
-        jobs["facebook_confidence"] = ""
-
-
-    if "location_verification" not in jobs.columns:
-
-        jobs["location_verification"] = ""
-
-
-    if "post_classification" not in jobs.columns:
-
-        jobs["post_classification"] = ""
+            jobs[column] = default
 
 
     # ========================================================
@@ -2520,7 +3321,7 @@ def prepare_jobs(
 
 
     # ========================================================
-    # REMOVE DUPLICATES
+    # DUPLICATES
     # ========================================================
 
     before = len(jobs)
@@ -2533,6 +3334,70 @@ def prepare_jobs(
 
     print(
         f"Duplicates removed: "
+        f"{before - len(jobs)}"
+    )
+
+
+    # ========================================================
+    # FEEDBACK FILTER
+    # ========================================================
+
+    feedback = load_feedback()
+
+
+    before = len(jobs)
+
+
+    def not_rejected_by_feedback(
+        row
+    ):
+
+        score = feedback_rejection_score(
+
+            row.get(
+                "title",
+                ""
+            ),
+
+            row.get(
+                "company",
+                ""
+            ),
+
+            (
+                clean_text(
+                    row.get(
+                        "title",
+                        ""
+                    )
+                )
+                + " "
+                + clean_text(
+                    row.get(
+                        "snippet",
+                        ""
+                    )
+                )
+            ),
+
+            feedback,
+
+        )
+
+
+        return score < 100
+
+
+    jobs = jobs[
+        jobs.apply(
+            not_rejected_by_feedback,
+            axis=1
+        )
+    ].copy()
+
+
+    print(
+        f"Previously rejected jobs removed: "
         f"{before - len(jobs)}"
     )
 
@@ -2555,11 +3420,15 @@ def prepare_jobs(
         or classify_fresher(
 
             clean_text(
-                row.get("title")
+                row.get(
+                    "title"
+                )
             )
             + " "
             + clean_text(
-                row.get("snippet")
+                row.get(
+                    "snippet"
+                )
             )
 
         ),
@@ -2570,7 +3439,7 @@ def prepare_jobs(
 
 
     # ========================================================
-    # AI/ML RELEVANCE
+    # RELEVANCE
     # ========================================================
 
     jobs[
@@ -2587,11 +3456,15 @@ def prepare_jobs(
         or relevance_score(
 
             clean_text(
-                row.get("title")
+                row.get(
+                    "title"
+                )
             )
             + " "
             + clean_text(
-                row.get("snippet")
+                row.get(
+                    "snippet"
+                )
             )
 
         ),
@@ -2605,7 +3478,7 @@ def prepare_jobs(
 
 
 # ============================================================
-# REMOVE FACEBOOK POSTS OLDER THAN 30 DAYS
+# REMOVE OLD FACEBOOK JOBS
 # ============================================================
 
 def remove_old_facebook_jobs():
@@ -2662,13 +3535,9 @@ def remove_old_facebook_jobs():
     formats = [
 
         "%Y-%m-%d",
-
         "%Y-%m-%d %H:%M",
-
         "%Y-%m-%d %H:%M UTC",
-
         "%Y-%m-%dT%H:%M:%S",
-
         "%Y-%m-%dT%H:%M:%S.%f",
 
     ]
@@ -2809,7 +3678,7 @@ def get_existing_ids():
 
 
 # ============================================================
-# UPLOAD
+# UPLOAD JOBS
 # ============================================================
 
 def upload_jobs(jobs):
@@ -2918,7 +3787,11 @@ def upload_jobs(jobs):
 
             now,
 
+            # Application status
             "To Apply",
+
+            # Review status
+            REVIEW_PENDING,
 
             clean_text(
                 job.get(
@@ -3005,7 +3878,7 @@ def main():
     print()
     print("=" * 70)
     print("AI JOB HUNTER")
-    print("BANGLADESH AI/ML EDITION")
+    print("BANGLADESH AI/ML + CODING/IT EDITION")
     print("=" * 70)
 
 
@@ -3017,7 +3890,25 @@ def main():
 
 
     # ========================================================
-    # OLD FACEBOOK JOB CLEANUP
+    # HUMAN FEEDBACK
+    #
+    # IMPORTANT:
+    # Run this BEFORE collecting new jobs.
+    #
+    # If you marked something "Not Related"
+    # in the previous run, it will now be:
+    #
+    # 1. Saved to feedback.json
+    # 2. Removed from Google Sheets
+    # 3. Used for future filtering
+    #
+    # ========================================================
+
+    process_review_feedback()
+
+
+    # ========================================================
+    # OLD FACEBOOK CLEANUP
     # ========================================================
 
     remove_old_facebook_jobs()
@@ -3053,8 +3944,10 @@ def main():
     # ========================================================
 
     all_data = (
+
         filtered_job_boards
         + facebook_jobs
+
     )
 
 
@@ -3085,25 +3978,78 @@ def main():
     print("COMPLETED")
     print("=" * 70)
 
+
     print(
         f"Processed: "
         f"{len(jobs)}"
     )
+
 
     print(
         f"New jobs added: "
         f"{new_jobs}"
     )
 
-    print()
 
+    feedback = load_feedback()
+
+
+    print(
+        f"Feedback examples: "
+        f"{len(feedback['rejected_jobs'])}"
+    )
+
+
+    print(
+        f"Learned patterns: "
+        f"{len(feedback['learned_patterns'])}"
+    )
+
+
+    print()
+    print(
+        "Target categories:"
+    )
+
+
+    print(
+        "  ✓ AI / ML"
+    )
+
+    print(
+        "  ✓ Data Science / Research"
+    )
+
+    print(
+        "  ✓ Coding Instructor"
+    )
+
+    print(
+        "  ✓ Programming Instructor"
+    )
+
+    print(
+        "  ✓ IT Instructor"
+    )
+
+    print(
+        "  ✓ IT Trainer"
+    )
+
+    print(
+        "  ✓ Computer Science Instructor"
+    )
+
+    print(
+        "  ✓ Coding / Programming Mentor"
+    )
+
+
+    print()
     print(
         "Filters active:"
     )
 
-    print(
-        "  ✓ AI/ML role required"
-    )
 
     print(
         "  ✓ Bangladesh location required"
@@ -3114,19 +4060,7 @@ def main():
     )
 
     print(
-        "  ✓ Pune rejected"
-    )
-
-    print(
-        "  ✓ Colombo rejected"
-    )
-
-    print(
-        "  ✓ US-only rejected"
-    )
-
-    print(
-        "  ✓ Foreign remote jobs rejected"
+        "  ✓ Foreign remote restrictions rejected"
     )
 
     print(
@@ -3134,19 +4068,15 @@ def main():
     )
 
     print(
-        "  ✓ Courses/training rejected"
+        "  ✓ Courses/training/events rejected"
     )
 
     print(
-        "  ✓ Events/webinars rejected"
+        "  ✓ Senior/management jobs rejected"
     )
 
     print(
-        "  ✓ Senior jobs rejected"
-    )
-
-    print(
-        "  ✓ Intern/trainee/junior detected"
+        "  ✓ Fresher/intern/trainee detection"
     )
 
     print(
@@ -3157,6 +4087,12 @@ def main():
         "  ✓ Old Facebook posts removed"
     )
 
+    print(
+        "  ✓ Human feedback learning enabled"
+    )
+
+
+    print()
     print("=" * 70)
 
 
