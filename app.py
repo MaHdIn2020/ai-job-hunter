@@ -26,15 +26,11 @@ JOB_BOARD_HOURS_OLD = 168
 # Facebook jobs/posts older than this are removed
 FACEBOOK_RETENTION_DAYS = 30
 
-# Feedback file
+# Persistent feedback memory
 FEEDBACK_FILE = "data/feedback.json"
 
-# IMPORTANT:
-#
-# Keep this FALSE during normal operation.
-#
-# If TRUE, the entire Google Sheet will be cleared.
-#
+# Keep FALSE during normal operation.
+# TRUE will clear the entire Google Sheet.
 WIPE_SHEET_ON_START = False
 
 
@@ -45,7 +41,6 @@ WIPE_SHEET_ON_START = False
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets"
 ]
-
 
 credentials = Credentials.from_service_account_info(
     json.loads(
@@ -68,7 +63,6 @@ worksheet = spreadsheet.sheet1
 # ============================================================
 
 HEADERS = [
-
     "Job ID",
     "Job Title",
     "Company",
@@ -82,10 +76,11 @@ HEADERS = [
     # Application status
     "Status",
 
-    # NEW:
-    # Human review of scraper relevance
+    # Human review
     "Review Status",
+    "Review Reason",
 
+    # Automatic analysis
     "Fresher Friendly",
     "AI/ML Relevance",
     "Search Query",
@@ -93,12 +88,11 @@ HEADERS = [
     "Facebook Confidence",
     "Post Classification",
     "Snippet",
-
 ]
 
 
 # ============================================================
-# REVIEW STATUSES
+# REVIEW STATUS
 # ============================================================
 
 REVIEW_PENDING = "Pending Review"
@@ -107,18 +101,33 @@ REVIEW_NOT_RELATED = "Not Related"
 
 
 # ============================================================
+# REVIEW REASONS
+# ============================================================
+
+REVIEW_REASONS = [
+    "Wrong Location",
+    "Not AI/ML",
+    "Not Instructor/Teaching",
+    "Too Senior",
+    "Wrong Job Type",
+    "Seeking Job, Not Hiring",
+    "Not a Job Post",
+    "Duplicate",
+    "Other",
+]
+
+
+# ============================================================
 # APPLICATION STATUSES
 # ============================================================
 
 APPLICATION_STATUSES = [
-
     "To Apply",
     "Applied",
     "Assessment",
     "Interview",
     "Rejected",
     "Offer",
-
 ]
 
 
@@ -127,7 +136,6 @@ APPLICATION_STATUSES = [
 # ============================================================
 
 def clean_text(value):
-
     if value is None:
         return ""
 
@@ -141,7 +149,6 @@ def clean_text(value):
 
 
 def normalize_text(text):
-
     text = clean_text(text)
 
     text = text.lower()
@@ -158,7 +165,6 @@ def normalize_text(text):
 
 
 def count_keywords(text, keywords):
-
     text = normalize_text(text)
 
     return sum(
@@ -334,22 +340,6 @@ INSTRUCTOR_KEYWORDS = [
 
 
 # ============================================================
-# GENERAL EDUCATION / TEACHING SIGNALS
-# ============================================================
-
-EDUCATION_KEYWORDS = [
-
-    "instructor",
-    "trainer",
-    "teacher",
-    "mentor",
-    "teaching assistant",
-    "teaching associate",
-
-]
-
-
-# ============================================================
 # FRESHER / ENTRY LEVEL KEYWORDS
 # ============================================================
 
@@ -450,7 +440,7 @@ HIRING_KEYWORDS = [
 
 
 # ============================================================
-# APPLICANT / JOB-SEEKER SIGNALS
+# JOB SEEKER SIGNALS
 # ============================================================
 
 APPLICANT_KEYWORDS = [
@@ -525,9 +515,7 @@ NOISE_KEYWORDS = [
     "training programme",
 
     "workshop",
-
     "webinar",
-
     "seminar",
 
     "bootcamp",
@@ -540,18 +528,14 @@ NOISE_KEYWORDS = [
     "learn artificial intelligence",
 
     "tutorial",
-
     "roadmap",
 
     "conference",
-
     "event",
     "events",
-
     "meetup",
 
     "hackathon",
-
     "competition",
     "contest",
 
@@ -559,7 +543,6 @@ NOISE_KEYWORDS = [
     "free course",
 
     "cohort",
-
     "enrollment",
     "enrolment",
 
@@ -854,7 +837,7 @@ FOREIGN_REMOTE_RESTRICTIONS = [
 
 
 # ============================================================
-# JOB CATEGORY
+# TARGET JOB CATEGORY
 # ============================================================
 
 def detect_job_category(title, text):
@@ -866,95 +849,38 @@ def detect_job_category(title, text):
         keyword in title
         for keyword in INSTRUCTOR_KEYWORDS
     ):
-
         return "Coding / IT Instructor"
 
     if any(
         keyword in text
         for keyword in INSTRUCTOR_KEYWORDS
     ):
-
         return "Coding / IT Instructor"
 
     if any(
         keyword in title
         for keyword in AI_ML_KEYWORDS
     ):
-
         return "AI / ML"
 
     if any(
         keyword in text
         for keyword in AI_ML_KEYWORDS
     ):
-
         return "AI / ML"
 
     if any(
         keyword in text
         for keyword in RELATED_AI_ROLES
     ):
-
         return "AI / Data / Research"
 
     return ""
 
 
 # ============================================================
-# FEEDBACK SYSTEM
+# FEEDBACK MEMORY
 # ============================================================
-
-GENERIC_FEEDBACK_WORDS = {
-
-    "engineer",
-    "engineering",
-    "developer",
-    "development",
-    "software",
-    "technology",
-    "technical",
-    "job",
-    "jobs",
-    "role",
-    "position",
-    "company",
-    "team",
-    "remote",
-    "dhaka",
-    "bangladesh",
-    "intern",
-    "internship",
-    "junior",
-    "trainee",
-    "entry",
-    "level",
-    "graduate",
-    "fresh",
-    "fresher",
-    "assistant",
-    "research",
-    "ai",
-    "ml",
-    "machine",
-    "learning",
-    "data",
-    "science",
-    "scientist",
-    "artificial",
-    "intelligence",
-    "coding",
-    "programming",
-    "instructor",
-    "trainer",
-    "teacher",
-    "mentor",
-    "computer",
-    "information",
-    "it",
-    "technology",
-
-}
-
 
 def ensure_feedback_directory():
 
@@ -963,11 +889,34 @@ def ensure_feedback_directory():
     )
 
     if directory:
-
         os.makedirs(
             directory,
             exist_ok=True
         )
+
+
+def default_feedback():
+
+    return {
+        "rejected_jobs": [],
+
+        "rejected_by_reason": {
+            reason: []
+            for reason in REVIEW_REASONS
+        },
+
+        "learned_patterns": {
+            reason: []
+            for reason in REVIEW_REASONS
+        },
+
+        "rejected_locations": [],
+
+        "statistics": {
+            reason: 0
+            for reason in REVIEW_REASONS
+        },
+    }
 
 
 def load_feedback():
@@ -977,14 +926,7 @@ def load_feedback():
     if not os.path.exists(
         FEEDBACK_FILE
     ):
-
-        return {
-
-            "rejected_jobs": [],
-            "learned_patterns": [],
-
-        }
-
+        return default_feedback()
 
     try:
 
@@ -996,11 +938,15 @@ def load_feedback():
 
             data = json.load(file)
 
-        if not isinstance(data, dict):
-
+        if not isinstance(
+            data,
+            dict
+        ):
             raise ValueError(
                 "Invalid feedback format"
             )
+
+        defaults = default_feedback()
 
         data.setdefault(
             "rejected_jobs",
@@ -1008,9 +954,41 @@ def load_feedback():
         )
 
         data.setdefault(
+            "rejected_by_reason",
+            {}
+        )
+
+        data.setdefault(
             "learned_patterns",
+            {}
+        )
+
+        data.setdefault(
+            "rejected_locations",
             []
         )
+
+        data.setdefault(
+            "statistics",
+            {}
+        )
+
+        for reason in REVIEW_REASONS:
+
+            data["rejected_by_reason"].setdefault(
+                reason,
+                []
+            )
+
+            data["learned_patterns"].setdefault(
+                reason,
+                []
+            )
+
+            data["statistics"].setdefault(
+                reason,
+                0
+            )
 
         return data
 
@@ -1020,12 +998,7 @@ def load_feedback():
             f"Could not load feedback: {e}"
         )
 
-        return {
-
-            "rejected_jobs": [],
-            "learned_patterns": [],
-
-        }
+        return default_feedback()
 
 
 def save_feedback(feedback):
@@ -1055,6 +1028,68 @@ def save_feedback(feedback):
     )
 
 
+# ============================================================
+# FEEDBACK TOKENIZATION
+# ============================================================
+
+GENERIC_FEEDBACK_WORDS = {
+
+    "engineer",
+    "engineering",
+    "developer",
+    "development",
+    "software",
+    "technology",
+    "technical",
+
+    "job",
+    "jobs",
+    "role",
+    "position",
+    "company",
+    "team",
+
+    "remote",
+    "dhaka",
+    "bangladesh",
+
+    "intern",
+    "internship",
+    "junior",
+    "trainee",
+    "entry",
+    "level",
+    "graduate",
+    "fresh",
+    "fresher",
+
+    "assistant",
+    "research",
+
+    "ai",
+    "ml",
+    "machine",
+    "learning",
+    "data",
+    "science",
+    "scientist",
+    "artificial",
+    "intelligence",
+
+    "coding",
+    "programming",
+    "instructor",
+    "trainer",
+    "teacher",
+    "mentor",
+
+    "computer",
+    "information",
+    "it",
+
+}
+
+
 def tokenize_title(title):
 
     title = normalize_text(
@@ -1070,14 +1105,10 @@ def tokenize_title(title):
     tokens = title.split()
 
     return [
-
         token
-
         for token in tokens
-
         if len(token) >= 3
         and token not in GENERIC_FEEDBACK_WORDS
-
     ]
 
 
@@ -1094,14 +1125,10 @@ def generate_title_phrases(title):
         len(tokens) - 1
     ):
 
-        phrase = (
+        phrases.append(
             tokens[i]
             + " "
             + tokens[i + 1]
-        )
-
-        phrases.append(
-            phrase
         )
 
     # Three-word phrases
@@ -1109,7 +1136,7 @@ def generate_title_phrases(title):
         len(tokens) - 2
     ):
 
-        phrase = (
+        phrases.append(
             tokens[i]
             + " "
             + tokens[i + 1]
@@ -1117,12 +1144,12 @@ def generate_title_phrases(title):
             + tokens[i + 2]
         )
 
-        phrases.append(
-            phrase
-        )
-
     return phrases
 
+
+# ============================================================
+# LEARN FROM FEEDBACK
+# ============================================================
 
 def learn_from_rejected_job(
     feedback,
@@ -1130,7 +1157,15 @@ def learn_from_rejected_job(
     company,
     location,
     url,
+    reason,
 ):
+
+    reason = clean_text(
+        reason
+    )
+
+    if reason not in REVIEW_REASONS:
+        reason = "Other"
 
     normalized_title = normalize_text(
         job_title
@@ -1140,55 +1175,66 @@ def learn_from_rejected_job(
         url
     )
 
-    if not normalized_title:
+    normalized_company = normalize_text(
+        company
+    )
 
+    normalized_location = normalize_text(
+        location
+    )
+
+    if not normalized_title:
         return
 
+    # --------------------------------------------------------
+    # Avoid saving same rejection repeatedly
+    # --------------------------------------------------------
 
-    # Don't save the same rejection repeatedly
     for rejected in feedback[
         "rejected_jobs"
     ]:
 
-        if (
-            normalize_text(
-                rejected.get(
-                    "job_url",
-                    ""
-                )
+        old_url = normalize_text(
+            rejected.get(
+                "job_url",
+                ""
             )
+        )
+
+        old_title = normalize_text(
+            rejected.get(
+                "job_title",
+                ""
+            )
+        )
+
+        old_company = normalize_text(
+            rejected.get(
+                "company",
+                ""
+            )
+        )
+
+        if (
+            normalized_url
+            and old_url
             == normalized_url
-            and normalized_url
         ):
-
             return
-
 
         if (
-            normalize_text(
-                rejected.get(
-                    "job_title",
-                    ""
-                )
-            )
+            old_title
             == normalized_title
-            and normalize_text(
-                rejected.get(
-                    "company",
-                    ""
-                )
-            )
-            == normalize_text(
-                company
-            )
+            and old_company
+            == normalized_company
         ):
-
             return
 
+    # --------------------------------------------------------
+    # Save complete rejection example
+    # --------------------------------------------------------
 
-    feedback[
-        "rejected_jobs"
-    ].append({
+    rejection = {
 
         "job_title":
             clean_text(job_title),
@@ -1202,97 +1248,146 @@ def learn_from_rejected_job(
         "job_url":
             clean_text(url),
 
+        "reason":
+            reason,
+
         "rejected_at":
             datetime.now(
                 timezone.utc
             ).isoformat(),
 
-    })
-
-
-    # ========================================================
-    # LEARN ONLY FROM REPEATED PHRASES
-    #
-    # We deliberately DO NOT learn individual words.
-    #
-    # Example:
-    #
-    # "Java Developer"
-    #
-    # does not make "Java" automatically bad.
-    #
-    # But repeated rejection of:
-    #
-    # "Java Developer"
-    # "Java Backend Developer"
-    # "Java Software Developer"
-    #
-    # can eventually create a useful pattern.
-    # ========================================================
-
-    all_titles = [
-
-        normalize_text(
-            item.get(
-                "job_title",
-                ""
-            )
-        )
-
-        for item in feedback[
-            "rejected_jobs"
-        ]
-
-    ]
-
-
-    phrase_counts = {}
-
-
-    for title in all_titles:
-
-        phrases = set(
-            generate_title_phrases(
-                title
-            )
-        )
-
-        for phrase in phrases:
-
-            phrase_counts[
-                phrase
-            ] = (
-                phrase_counts.get(
-                    phrase,
-                    0
-                )
-                + 1
-            )
-
-
-    learned = [
-
-        phrase
-
-        for phrase, count
-        in phrase_counts.items()
-
-        if count >= 2
-
-    ]
-
+    }
 
     feedback[
-        "learned_patterns"
-    ] = sorted(
-        learned
+        "rejected_jobs"
+    ].append(
+        rejection
     )
 
+    feedback[
+        "rejected_by_reason"
+    ].setdefault(
+        reason,
+        []
+    )
+
+    feedback[
+        "rejected_by_reason"
+    ][reason].append(
+        rejection
+    )
+
+    feedback[
+        "statistics"
+    ][reason] = (
+        feedback[
+            "statistics"
+        ].get(
+            reason,
+            0
+        )
+        + 1
+    )
+
+    # --------------------------------------------------------
+    # WRONG LOCATION
+    #
+    # Learn the actual location separately.
+    # We do NOT learn the title as a bad title.
+    # --------------------------------------------------------
+
+    if reason == "Wrong Location":
+
+        if (
+            normalized_location
+            and normalized_location
+            not in feedback[
+                "rejected_locations"
+            ]
+        ):
+
+            feedback[
+                "rejected_locations"
+            ].append(
+                normalized_location
+            )
+
+    # --------------------------------------------------------
+    # OTHER TITLE-BASED REASONS
+    # --------------------------------------------------------
+
+    if reason in [
+        "Not AI/ML",
+        "Too Senior",
+        "Wrong Job Type",
+        "Not Instructor/Teaching",
+        "Seeking Job, Not Hiring",
+        "Not a Job Post",
+        "Other",
+    ]:
+
+        all_rejections = (
+            feedback[
+                "rejected_by_reason"
+            ][reason]
+        )
+
+        title_counts = {}
+
+        for item in all_rejections:
+
+            item_title = normalize_text(
+                item.get(
+                    "job_title",
+                    ""
+                )
+            )
+
+            phrases = set(
+                generate_title_phrases(
+                    item_title
+                )
+            )
+
+            for phrase in phrases:
+
+                title_counts[
+                    phrase
+                ] = (
+                    title_counts.get(
+                        phrase,
+                        0
+                    )
+                    + 1
+                )
+
+        learned = [
+
+            phrase
+
+            for phrase, count
+            in title_counts.items()
+
+            if count >= 2
+
+        ]
+
+        feedback[
+            "learned_patterns"
+        ][reason] = sorted(
+            learned
+        )
+
+
+# ============================================================
+# FEEDBACK REJECTION SCORE
+# ============================================================
 
 def feedback_rejection_score(
     title,
     company,
     text,
+    location,
     feedback,
 ):
 
@@ -1308,8 +1403,14 @@ def feedback_rejection_score(
         text
     )
 
+    location = normalize_text(
+        location
+    )
 
-    # Exact previously rejected title
+    # --------------------------------------------------------
+    # Exact previously rejected job
+    # --------------------------------------------------------
+
     for rejected in feedback[
         "rejected_jobs"
     ]:
@@ -1328,14 +1429,12 @@ def feedback_rejection_score(
             )
         )
 
-
         if (
             rejected_title
             and title
             == rejected_title
         ):
 
-            # Exact same title is strong evidence
             if (
                 not rejected_company
                 or not company
@@ -1345,61 +1444,120 @@ def feedback_rejection_score(
 
                 return 100
 
+    # --------------------------------------------------------
+    # WRONG LOCATION
+    #
+    # Only compare actual location information.
+    # Do NOT reject a title because another rejected job
+    # happened to have the same title.
+    # --------------------------------------------------------
 
-    # Learned repeated phrases
-    matched_patterns = [
+    wrong_location_examples = feedback.get(
+        "rejected_locations",
+        []
+    )
 
-        pattern
+    for bad_location in wrong_location_examples:
 
-        for pattern in feedback[
-            "learned_patterns"
-        ]
+        if (
+            bad_location
+            and bad_location
+            in location
+        ):
 
-        if pattern in title
-        or pattern in text
+            return 100
 
-    ]
+    # --------------------------------------------------------
+    # CATEGORY-SPECIFIC LEARNING
+    # --------------------------------------------------------
 
+    # Not AI/ML
+    for pattern in feedback[
+        "learned_patterns"
+    ].get(
+        "Not AI/ML",
+        []
+    ):
 
-    # We need at least one repeated pattern
-    # and do not let one weak pattern automatically
-    # destroy a potentially good job.
-    if matched_patterns:
+        if pattern in title:
 
-        return min(
-            len(matched_patterns) * 25,
-            75
-        )
+            return 70
 
+    # Not Instructor/Teaching
+    for pattern in feedback[
+        "learned_patterns"
+    ].get(
+        "Not Instructor/Teaching",
+        []
+    ):
+
+        if pattern in title:
+
+            return 70
+
+    # Too Senior
+    for pattern in feedback[
+        "learned_patterns"
+    ].get(
+        "Too Senior",
+        []
+    ):
+
+        if pattern in title:
+
+            return 60
+
+    # Wrong Job Type
+    for pattern in feedback[
+        "learned_patterns"
+    ].get(
+        "Wrong Job Type",
+        []
+    ):
+
+        if pattern in title:
+
+            return 60
+
+    # Seeking Job
+    for pattern in feedback[
+        "learned_patterns"
+    ].get(
+        "Seeking Job, Not Hiring",
+        []
+    ):
+
+        if pattern in text:
+
+            return 80
+
+    # Not a Job Post
+    for pattern in feedback[
+        "learned_patterns"
+    ].get(
+        "Not a Job Post",
+        []
+    ):
+
+        if pattern in title:
+
+            return 80
 
     return 0
 
 
+# ============================================================
+# PROCESS HUMAN FEEDBACK
+# ============================================================
+
 def process_review_feedback():
-
-    """
-    Reads Google Sheet rows.
-
-    If Review Status is:
-        Not Related
-
-    then:
-
-        1. Save it to feedback.json
-        2. Learn repeated title patterns
-        3. Remove it from the Google Sheet
-
-    Relevant and Pending Review rows remain untouched.
-    """
 
     print()
     print("=" * 70)
     print("PROCESSING HUMAN FEEDBACK")
     print("=" * 70)
 
-
     rows = worksheet.get_all_values()
-
 
     if len(rows) <= 1:
 
@@ -1409,9 +1567,7 @@ def process_review_feedback():
 
         return
 
-
     headers = rows[0]
-
 
     try:
 
@@ -1419,17 +1575,9 @@ def process_review_feedback():
             "Review Status"
         )
 
-    except ValueError:
-
-        print(
-            "Review Status column not found."
+        reason_index = headers.index(
+            "Review Reason"
         )
-
-        return
-
-
-    # Column indexes
-    try:
 
         job_id_index = headers.index(
             "Job ID"
@@ -1451,38 +1599,29 @@ def process_review_feedback():
             "Job URL"
         )
 
-    except ValueError:
+    except ValueError as e:
 
         print(
-            "Required columns missing."
+            f"Required feedback column missing: {e}"
         )
 
         return
 
-
     feedback = load_feedback()
 
-
     rows_to_delete = []
-
 
     for row_number, row in enumerate(
         rows[1:],
         start=2
     ):
 
-        if (
-            len(row)
-            <= review_index
-        ):
-
+        if len(row) <= review_index:
             continue
-
 
         review_status = normalize_text(
             row[review_index]
         )
-
 
         if (
             review_status
@@ -1490,9 +1629,7 @@ def process_review_feedback():
                 REVIEW_NOT_RELATED
             )
         ):
-
             continue
-
 
         title = (
             row[title_index]
@@ -1518,6 +1655,21 @@ def process_review_feedback():
             else ""
         )
 
+        reason = (
+            row[reason_index]
+            if len(row) > reason_index
+            else ""
+        )
+
+        reason = clean_text(
+            reason
+        )
+
+        # If the user forgot to select a reason,
+        # don't lose the feedback.
+        if reason not in REVIEW_REASONS:
+
+            reason = "Other"
 
         print()
         print(
@@ -1532,33 +1684,32 @@ def process_review_feedback():
             f"   Company: {company}"
         )
 
-
-        learn_from_rejected_job(
-
-            feedback,
-
-            title,
-
-            company,
-
-            location,
-
-            url,
-
+        print(
+            f"   Location: {location}"
         )
 
+        print(
+            f"   Reason: {reason}"
+        )
+
+        learn_from_rejected_job(
+            feedback,
+            title,
+            company,
+            location,
+            url,
+            reason,
+        )
 
         rows_to_delete.append(
             row_number
         )
-
 
     if rows_to_delete:
 
         save_feedback(
             feedback
         )
-
 
     # Delete from bottom to top
     for row_number in reversed(
@@ -1569,8 +1720,8 @@ def process_review_feedback():
             row_number
         )
 
-
     print()
+
     print(
         f"Human rejected jobs: "
         f"{len(rows_to_delete)}"
@@ -1581,10 +1732,26 @@ def process_review_feedback():
         f"{len(feedback['rejected_jobs'])}"
     )
 
+    print()
+
     print(
-        f"Learned repeated patterns: "
-        f"{len(feedback['learned_patterns'])}"
+        "Feedback statistics:"
     )
+
+    for reason in REVIEW_REASONS:
+
+        count = feedback[
+            "statistics"
+        ].get(
+            reason,
+            0
+        )
+
+        if count:
+
+            print(
+                f"  {reason}: {count}"
+            )
 
 
 # ============================================================
@@ -1613,11 +1780,9 @@ def setup_sheet():
 
         return
 
-
     existing_headers = worksheet.row_values(
         1
     )
-
 
     if not existing_headers:
 
@@ -1628,21 +1793,17 @@ def setup_sheet():
 
         return
 
-
-    # ========================================================
-    # AUTOMATICALLY ADD NEW COLUMNS
-    # ========================================================
-
+    # Automatically add missing columns
     missing_headers = [
 
         header
 
         for header in HEADERS
 
-        if header not in existing_headers
+        if header
+        not in existing_headers
 
     ]
-
 
     if missing_headers:
 
@@ -1650,7 +1811,6 @@ def setup_sheet():
         print(
             "Adding missing sheet columns:"
         )
-
 
         for header in missing_headers:
 
@@ -1676,7 +1836,9 @@ def setup_sheet():
 def create_job_id(row):
 
     url = clean_text(
-        row.get("job_url")
+        row.get(
+            "job_url"
+        )
     )
 
     if url:
@@ -1688,29 +1850,35 @@ def create_job_id(row):
     else:
 
         unique_value = "|".join([
-
             clean_text(
-                row.get("title")
+                row.get(
+                    "title"
+                )
             ).lower(),
 
             clean_text(
-                row.get("company")
+                row.get(
+                    "company"
+                )
             ).lower(),
 
             clean_text(
-                row.get("location")
+                row.get(
+                    "location"
+                )
             ).lower(),
 
         ])
 
-
     return hashlib.sha256(
-        unique_value.encode("utf-8")
+        unique_value.encode(
+            "utf-8"
+        )
     ).hexdigest()[:16]
 
 
 # ============================================================
-# AI/ML / INSTRUCTOR TITLE FILTER
+# TARGET TITLE FILTER
 # ============================================================
 
 def is_target_title(title):
@@ -1719,15 +1887,13 @@ def is_target_title(title):
         title
     )
 
-
     if not title:
-
         return False
-
 
     target_terms = [
 
         # AI / ML
+
         "ai engineer",
         "ai developer",
         "ai intern",
@@ -1746,7 +1912,6 @@ def is_target_title(title):
         "computer vision",
 
         "nlp",
-
         "natural language processing",
 
         "generative ai",
@@ -1757,7 +1922,21 @@ def is_target_title(title):
 
         "artificial intelligence",
 
+        # Data / Research
+
+        "data scientist",
+        "data science intern",
+        "data science trainee",
+
+        "research assistant",
+        "ai research assistant",
+        "machine learning research assistant",
+
+        "data analyst",
+        "data analyst intern",
+
         # Instructor
+
         "coding instructor",
         "coding trainer",
         "coding teacher",
@@ -1820,7 +1999,6 @@ def is_target_title(title):
 
     ]
 
-
     return any(
         term in title
         for term in target_terms
@@ -1837,7 +2015,6 @@ def classify_fresher(text):
         text
     )
 
-
     if any(
         keyword in text
         for keyword in FRESHER_KEYWORDS
@@ -1845,12 +2022,11 @@ def classify_fresher(text):
 
         return "YES"
 
-
     return "MAYBE"
 
 
 # ============================================================
-# AI/ML / TARGET RELEVANCE SCORE
+# AI/ML RELEVANCE SCORE
 # ============================================================
 
 def relevance_score(text):
@@ -1859,9 +2035,7 @@ def relevance_score(text):
         text
     )
 
-
     score = 0
-
 
     strong_terms = [
 
@@ -1878,7 +2052,6 @@ def relevance_score(text):
         "it instructor",
 
     ]
-
 
     medium_terms = [
 
@@ -1897,20 +2070,15 @@ def relevance_score(text):
 
     ]
 
-
     for term in strong_terms:
 
         if term in text:
-
             score += 20
-
 
     for term in medium_terms:
 
         if term in text:
-
             score += 10
-
 
     return min(
         score,
@@ -1928,7 +2096,6 @@ def analyze_location(text):
         text
     )
 
-
     bd_matches = [
 
         location
@@ -1940,7 +2107,6 @@ def analyze_location(text):
 
     ]
 
-
     foreign_matches = [
 
         location
@@ -1951,7 +2117,6 @@ def analyze_location(text):
         if location in text
 
     ]
-
 
     return {
 
@@ -1974,7 +2139,6 @@ def contains_remote(text):
         text
     )
 
-
     return any(
         keyword in text
         for keyword in REMOTE_KEYWORDS
@@ -1985,14 +2149,11 @@ def contains_remote(text):
 # FOREIGN REMOTE CHECK
 # ============================================================
 
-def has_foreign_remote_restriction(
-    text
-):
+def has_foreign_remote_restriction(text):
 
     text = normalize_text(
         text
     )
-
 
     return any(
         phrase in text
@@ -2010,7 +2171,6 @@ def is_job_seeker_post(text):
     text = normalize_text(
         text
     )
-
 
     return [
 
@@ -2033,7 +2193,6 @@ def employer_hiring_signal(text):
     text = normalize_text(
         text
     )
-
 
     return [
 
@@ -2066,32 +2225,24 @@ def classify_facebook_post(
     )
 
     full_text = (
-
         title_text
         + " "
         + snippet_text
-
     )
 
-
-    # ========================================================
-    # HUMAN FEEDBACK
-    # ========================================================
+    # --------------------------------------------------------
+    # FEEDBACK
+    # --------------------------------------------------------
 
     feedback_score = (
         feedback_rejection_score(
-
             title_text,
-
             "",
-
             full_text,
-
+            "",
             feedback,
-
         )
     )
-
 
     if feedback_score >= 100:
 
@@ -2113,17 +2264,15 @@ def classify_facebook_post(
 
         }
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # JOB SEEKER
-    # ========================================================
+    # --------------------------------------------------------
 
     applicant_matches = (
         is_job_seeker_post(
             full_text
         )
     )
-
 
     if applicant_matches:
 
@@ -2145,17 +2294,15 @@ def classify_facebook_post(
 
         }
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # EMPLOYER SIGNAL
-    # ========================================================
+    # --------------------------------------------------------
 
     hiring_matches = (
         employer_hiring_signal(
             full_text
         )
     )
-
 
     if not hiring_matches:
 
@@ -2176,16 +2323,14 @@ def classify_facebook_post(
 
         }
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # TARGET CATEGORY
-    # ========================================================
+    # --------------------------------------------------------
 
     category = detect_job_category(
         title_text,
         full_text
     )
-
 
     if not category:
 
@@ -2207,10 +2352,9 @@ def classify_facebook_post(
 
         }
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # NOISE
-    # ========================================================
+    # --------------------------------------------------------
 
     noise_matches = [
 
@@ -2222,7 +2366,6 @@ def classify_facebook_post(
         if keyword in full_text
 
     ]
-
 
     if len(noise_matches) >= 2:
 
@@ -2243,10 +2386,9 @@ def classify_facebook_post(
 
         }
 
-
-    # ========================================================
-    # SENIOR JOB
-    # ========================================================
+    # --------------------------------------------------------
+    # SENIOR ROLE
+    # --------------------------------------------------------
 
     senior_matches = [
 
@@ -2258,7 +2400,6 @@ def classify_facebook_post(
         if keyword in title_text
 
     ]
-
 
     if senior_matches:
 
@@ -2279,15 +2420,13 @@ def classify_facebook_post(
 
         }
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # LOCATION
-    # ========================================================
+    # --------------------------------------------------------
 
     location = analyze_location(
         full_text
     )
-
 
     bd_locations = location[
         "bangladesh"
@@ -2297,7 +2436,7 @@ def classify_facebook_post(
         "foreign"
     ]
 
-
+    # Foreign location without Bangladesh
     if foreign_locations:
 
         if not bd_locations:
@@ -2320,7 +2459,8 @@ def classify_facebook_post(
 
             }
 
-
+        # Strong foreign city wins even when
+        # Bangladesh is mentioned elsewhere.
         if any(
             city in full_text
             for city
@@ -2345,15 +2485,13 @@ def classify_facebook_post(
 
             }
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # REMOTE
-    # ========================================================
+    # --------------------------------------------------------
 
     remote = contains_remote(
         full_text
     )
-
 
     if remote:
 
@@ -2379,7 +2517,6 @@ def classify_facebook_post(
 
             }
 
-
         if not bd_locations:
 
             return {
@@ -2400,10 +2537,9 @@ def classify_facebook_post(
 
             }
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # NON-REMOTE
-    # ========================================================
+    # --------------------------------------------------------
 
     if not remote:
 
@@ -2427,46 +2563,40 @@ def classify_facebook_post(
 
             }
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # CONFIDENCE
-    # ========================================================
+    # --------------------------------------------------------
 
     confidence = 0
-
 
     category_matches = [
 
         keyword
 
         for keyword
-        in AI_ML_KEYWORDS
 
-        + INSTRUCTOR_KEYWORDS
-
-        + RELATED_AI_ROLES
+        in (
+            AI_ML_KEYWORDS
+            + INSTRUCTOR_KEYWORDS
+            + RELATED_AI_ROLES
+        )
 
         if keyword in full_text
 
     ]
-
 
     confidence += min(
         len(category_matches) * 10,
         30
     )
 
-
     confidence += min(
         len(hiring_matches) * 10,
         30
     )
 
-
     if bd_locations:
-
         confidence += 30
-
 
     if any(
         keyword in full_text
@@ -2476,17 +2606,13 @@ def classify_facebook_post(
 
         confidence += 10
 
-
     if remote:
-
         confidence += 5
-
 
     confidence = min(
         confidence,
         100
     )
-
 
     if confidence < 60:
 
@@ -2507,7 +2633,6 @@ def classify_facebook_post(
                 "Insufficient evidence",
 
         }
-
 
     return {
 
@@ -2543,7 +2668,6 @@ def serper_search(query):
         "SERPER_API_KEY"
     )
 
-
     if not api_key:
 
         print(
@@ -2553,11 +2677,9 @@ def serper_search(query):
 
         return []
 
-
     url = (
         "https://google.serper.dev/search"
     )
-
 
     headers = {
 
@@ -2568,7 +2690,6 @@ def serper_search(query):
             "application/json",
 
     }
-
 
     payload = {
 
@@ -2589,33 +2710,23 @@ def serper_search(query):
 
     }
 
-
     try:
 
         response = requests.post(
-
             url,
-
             headers=headers,
-
             json=payload,
-
             timeout=30,
-
         )
-
 
         response.raise_for_status()
 
-
         data = response.json()
-
 
         return data.get(
             "organic",
             []
         )
-
 
     except Exception as e:
 
@@ -2633,49 +2744,41 @@ def serper_search(query):
 FACEBOOK_QUERIES = [
 
     # AI / ML
-    'site:facebook.com "AI Engineer" "Bangladesh" hiring',
 
+    'site:facebook.com "AI Engineer" "Bangladesh" hiring',
     'site:facebook.com "AI Engineer" "Dhaka" hiring',
 
     'site:facebook.com "Machine Learning Engineer" "Bangladesh" hiring',
 
     'site:facebook.com "Machine Learning Intern" "Bangladesh"',
-
     'site:facebook.com "Machine Learning Intern" "Dhaka"',
 
     'site:facebook.com "AI Intern" "Bangladesh"',
-
     'site:facebook.com "AI Internship" "Dhaka"',
 
     'site:facebook.com "AI Trainee" "Bangladesh"',
-
     'site:facebook.com "Machine Learning Trainee" "Bangladesh"',
 
     'site:facebook.com "Junior AI Engineer" "Bangladesh"',
-
     'site:facebook.com "Junior Machine Learning" "Bangladesh"',
 
     'site:facebook.com "AI Research Intern" "Bangladesh"',
-
     'site:facebook.com "AI Research Assistant" "Bangladesh"',
 
     'site:facebook.com "Computer Vision Intern" "Bangladesh"',
-
     'site:facebook.com "NLP Intern" "Bangladesh"',
 
     'site:facebook.com "Generative AI Intern" "Bangladesh"',
 
     # Coding / IT education
-    'site:facebook.com "Coding Instructor" "Bangladesh" hiring',
 
+    'site:facebook.com "Coding Instructor" "Bangladesh" hiring',
     'site:facebook.com "Coding Instructor" "Dhaka" hiring',
 
     'site:facebook.com "Programming Instructor" "Bangladesh" hiring',
-
     'site:facebook.com "Programming Trainer" "Bangladesh" hiring',
 
     'site:facebook.com "IT Instructor" "Bangladesh" hiring',
-
     'site:facebook.com "IT Trainer" "Bangladesh" hiring',
 
     'site:facebook.com "Computer Science Instructor" "Bangladesh"',
@@ -2686,9 +2789,9 @@ FACEBOOK_QUERIES = [
 
     'site:facebook.com "Teaching Assistant" "programming" "Bangladesh"',
 
-    # Groups
-    'site:facebook.com/groups "AI jobs" "Bangladesh"',
+    # Facebook groups
 
+    'site:facebook.com/groups "AI jobs" "Bangladesh"',
     'site:facebook.com/groups "AI internship" "Bangladesh"',
 
     'site:facebook.com/groups "machine learning jobs" "Bangladesh"',
@@ -2713,14 +2816,11 @@ def collect_facebook_jobs():
     print("STAGE 2: STRICT FACEBOOK SEARCH")
     print("=" * 70)
 
-
     feedback = load_feedback()
-
 
     facebook_jobs = []
 
     seen_urls = set()
-
 
     for index, query in enumerate(
         FACEBOOK_QUERIES,
@@ -2737,32 +2837,34 @@ def collect_facebook_jobs():
             query
         )
 
-
         results = serper_search(
             query
         )
-
 
         print(
             f"Search results: "
             f"{len(results)}"
         )
 
-
         for result in results:
 
             title = clean_text(
-                result.get("title")
+                result.get(
+                    "title"
+                )
             )
 
             link = clean_text(
-                result.get("link")
+                result.get(
+                    "link"
+                )
             )
 
             snippet = clean_text(
-                result.get("snippet")
+                result.get(
+                    "snippet"
+                )
             )
-
 
             if (
                 "facebook.com"
@@ -2771,32 +2873,26 @@ def collect_facebook_jobs():
 
                 continue
 
-
             normalized_url = (
                 link.lower().strip()
             )
 
-
-            if normalized_url in seen_urls:
+            if (
+                normalized_url
+                in seen_urls
+            ):
 
                 continue
-
 
             seen_urls.add(
                 normalized_url
             )
 
-
             analysis = classify_facebook_post(
-
                 title,
-
                 snippet,
-
                 feedback,
-
             )
-
 
             if not analysis["accepted"]:
 
@@ -2815,7 +2911,6 @@ def collect_facebook_jobs():
                 )
 
                 continue
-
 
             print()
             print(
@@ -2841,15 +2936,11 @@ def collect_facebook_jobs():
                 f"{analysis['confidence']}"
             )
 
-
             combined_text = (
-
                 title
                 + " "
                 + snippet
-
             )
-
 
             job = {
 
@@ -2912,23 +3003,19 @@ def collect_facebook_jobs():
 
             }
 
-
             facebook_jobs.append(
                 job
             )
 
-
     print()
+
     print(
         f"Accepted Facebook jobs: "
         f"{len(facebook_jobs)}"
     )
 
-
     if not facebook_jobs:
-
         return []
-
 
     return [
         pd.DataFrame(
@@ -2944,6 +3031,7 @@ def collect_facebook_jobs():
 SEARCH_TERMS = [
 
     # AI / ML
+
     "machine learning engineer",
     "machine learning intern",
     "machine learning trainee",
@@ -2993,40 +3081,57 @@ SEARCH_TERMS = [
     "LLM intern",
 
     # Data
+
     "data scientist",
     "data science intern",
     "data science trainee",
+
     "data analyst",
+    "data analyst intern",
 
     # Coding / IT education
+
     "coding instructor",
     "coding trainer",
+
     "programming instructor",
     "programming trainer",
+
     "IT instructor",
     "IT trainer",
+
     "computer instructor",
     "computer science instructor",
+
     "computer science teacher",
+
     "programming mentor",
     "coding mentor",
+
     "Python instructor",
     "C++ instructor",
+
     "web development instructor",
+
     "software instructor",
+
     "AI instructor",
+
     "machine learning instructor",
+
     "robotics instructor",
 
 ]
 
 
-JOB_BOARD_SITES = [
+# ============================================================
+# JOB BOARD SITES
+# ============================================================
 
+JOB_BOARD_SITES = [
     "linkedin",
     "indeed",
     "google",
-
 ]
 
 
@@ -3041,9 +3146,7 @@ def collect_job_board_jobs():
     print("STAGE 1: JOB BOARDS")
     print("=" * 70)
 
-
     all_jobs = []
-
 
     for index, search_term in enumerate(
         SEARCH_TERMS,
@@ -3056,7 +3159,6 @@ def collect_job_board_jobs():
             f"{len(SEARCH_TERMS)}] "
             f"{search_term}"
         )
-
 
         try:
 
@@ -3081,7 +3183,6 @@ def collect_job_board_jobs():
 
             )
 
-
             if (
                 jobs is not None
                 and not jobs.empty
@@ -3092,23 +3193,19 @@ def collect_job_board_jobs():
                     f"{len(jobs)}"
                 )
 
-
                 jobs[
                     "search_term"
                 ] = search_term
 
-
                 all_jobs.append(
                     jobs
                 )
-
 
             else:
 
                 print(
                     "No results."
                 )
-
 
         except Exception as e:
 
@@ -3117,7 +3214,6 @@ def collect_job_board_jobs():
             )
 
             continue
-
 
     return all_jobs
 
@@ -3131,29 +3227,25 @@ def filter_job_board_jobs(
 ):
 
     if not dataframes:
-
         return []
-
 
     jobs = pd.concat(
         dataframes,
         ignore_index=True
     )
 
-
     print()
+
     print(
         f"Raw job-board jobs: "
         f"{len(jobs)}"
     )
 
-
-    # ========================================================
-    # TARGET TITLE FILTER
-    # ========================================================
+    # --------------------------------------------------------
+    # TARGET TITLE
+    # --------------------------------------------------------
 
     before = len(jobs)
-
 
     jobs = jobs[
         jobs["title"].apply(
@@ -3161,19 +3253,16 @@ def filter_job_board_jobs(
         )
     ].copy()
 
-
     print(
         f"Non-target jobs removed: "
         f"{before - len(jobs)}"
     )
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # SENIOR JOBS
-    # ========================================================
+    # --------------------------------------------------------
 
     before = len(jobs)
-
 
     def senior_title(title):
 
@@ -3181,12 +3270,11 @@ def filter_job_board_jobs(
             title
         )
 
-
         return any(
             keyword in title
-            for keyword in SENIOR_KEYWORDS
+            for keyword
+            in SENIOR_KEYWORDS
         )
-
 
     jobs = jobs[
         ~jobs["title"].apply(
@@ -3194,19 +3282,16 @@ def filter_job_board_jobs(
         )
     ].copy()
 
-
     print(
         f"Senior jobs removed: "
         f"{before - len(jobs)}"
     )
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # LOCATION
-    # ========================================================
+    # --------------------------------------------------------
 
     before = len(jobs)
-
 
     def valid_job_board_location(
         location
@@ -3216,11 +3301,8 @@ def filter_job_board_jobs(
             location
         )
 
-
         if not location:
-
             return False
-
 
         bd = any(
             keyword in location
@@ -3228,21 +3310,16 @@ def filter_job_board_jobs(
             in BANGLADESH_LOCATIONS
         )
 
-
         foreign = any(
             keyword in location
             for keyword
             in FOREIGN_LOCATIONS
         )
 
-
         if foreign:
-
             return False
 
-
         return bd
-
 
     jobs = jobs[
         jobs["location"].apply(
@@ -3250,12 +3327,10 @@ def filter_job_board_jobs(
         )
     ].copy()
 
-
     print(
         f"Non-Bangladesh jobs removed: "
         f"{before - len(jobs)}"
     )
-
 
     return [
         jobs
@@ -3271,15 +3346,12 @@ def prepare_jobs(
 ):
 
     if not dataframes:
-
         return pd.DataFrame()
-
 
     jobs = pd.concat(
         dataframes,
         ignore_index=True
     )
-
 
     required_defaults = {
 
@@ -3292,14 +3364,15 @@ def prepare_jobs(
         "job_type": "",
         "search_term": "",
         "snippet": "",
+
         "fresher_friendly": "",
         "ai_ml_relevance": "",
+
         "facebook_confidence": "",
         "location_verification": "",
         "post_classification": "",
 
     }
-
 
     for column, default in (
         required_defaults.items()
@@ -3309,48 +3382,63 @@ def prepare_jobs(
 
             jobs[column] = default
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # JOB IDS
-    # ========================================================
+    # --------------------------------------------------------
 
     jobs["job_id"] = jobs.apply(
         create_job_id,
         axis=1
     )
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # DUPLICATES
-    # ========================================================
+    # --------------------------------------------------------
 
     before = len(jobs)
 
-
     jobs = jobs.drop_duplicates(
-        subset=["job_id"]
+        subset=[
+            "job_id"
+        ]
     )
-
 
     print(
         f"Duplicates removed: "
         f"{before - len(jobs)}"
     )
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # FEEDBACK FILTER
-    # ========================================================
+    # --------------------------------------------------------
 
     feedback = load_feedback()
 
-
     before = len(jobs)
-
 
     def not_rejected_by_feedback(
         row
     ):
+
+        combined_text = (
+
+            clean_text(
+                row.get(
+                    "title",
+                    ""
+                )
+            )
+
+            + " "
+
+            + clean_text(
+                row.get(
+                    "snippet",
+                    ""
+                )
+            )
+
+        )
 
         score = feedback_rejection_score(
 
@@ -3364,29 +3452,18 @@ def prepare_jobs(
                 ""
             ),
 
-            (
-                clean_text(
-                    row.get(
-                        "title",
-                        ""
-                    )
-                )
-                + " "
-                + clean_text(
-                    row.get(
-                        "snippet",
-                        ""
-                    )
-                )
+            combined_text,
+
+            row.get(
+                "location",
+                ""
             ),
 
             feedback,
 
         )
 
-
         return score < 100
-
 
     jobs = jobs[
         jobs.apply(
@@ -3395,16 +3472,14 @@ def prepare_jobs(
         )
     ].copy()
 
-
     print(
         f"Previously rejected jobs removed: "
         f"{before - len(jobs)}"
     )
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # FRESHER
-    # ========================================================
+    # --------------------------------------------------------
 
     jobs[
         "fresher_friendly"
@@ -3417,6 +3492,7 @@ def prepare_jobs(
                 "fresher_friendly"
             )
         )
+
         or classify_fresher(
 
             clean_text(
@@ -3424,7 +3500,9 @@ def prepare_jobs(
                     "title"
                 )
             )
+
             + " "
+
             + clean_text(
                 row.get(
                     "snippet"
@@ -3437,10 +3515,9 @@ def prepare_jobs(
 
     )
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # RELEVANCE
-    # ========================================================
+    # --------------------------------------------------------
 
     jobs[
         "ai_ml_relevance"
@@ -3453,6 +3530,7 @@ def prepare_jobs(
                 "ai_ml_relevance"
             )
         )
+
         or relevance_score(
 
             clean_text(
@@ -3460,7 +3538,9 @@ def prepare_jobs(
                     "title"
                 )
             )
+
             + " "
+
             + clean_text(
                 row.get(
                     "snippet"
@@ -3473,7 +3553,6 @@ def prepare_jobs(
 
     )
 
-
     return jobs
 
 
@@ -3484,26 +3563,19 @@ def prepare_jobs(
 def remove_old_facebook_jobs():
 
     if WIPE_SHEET_ON_START:
-
         return
-
 
     print()
     print(
         "Checking expired Facebook jobs..."
     )
 
-
     rows = worksheet.get_all_values()
 
-
     if len(rows) <= 1:
-
         return
 
-
     headers = rows[0]
-
 
     try:
 
@@ -3520,17 +3592,13 @@ def remove_old_facebook_jobs():
         )
 
     except ValueError:
-
         return
-
 
     now = datetime.now(
         timezone.utc
     )
 
-
     delete_rows = []
-
 
     formats = [
 
@@ -3542,29 +3610,22 @@ def remove_old_facebook_jobs():
 
     ]
 
-
     for row_number, row in enumerate(
         rows[1:],
         start=2
     ):
 
         if len(row) <= source_index:
-
             continue
-
 
         source = normalize_text(
             row[source_index]
         )
 
-
         if source != "facebook":
-
             continue
 
-
         date_value = ""
-
 
         if (
             len(row)
@@ -3576,7 +3637,6 @@ def remove_old_facebook_jobs():
                     date_posted_index
                 ]
             )
-
 
         if not date_value:
 
@@ -3591,9 +3651,7 @@ def remove_old_facebook_jobs():
                     ]
                 )
 
-
         parsed_date = None
-
 
         for fmt in formats:
 
@@ -3611,20 +3669,14 @@ def remove_old_facebook_jobs():
                 break
 
             except ValueError:
-
                 continue
 
-
         if parsed_date is None:
-
             continue
 
-
         age_days = (
-
             now - parsed_date
         ).total_seconds() / 86400
-
 
         if (
             age_days
@@ -3635,7 +3687,6 @@ def remove_old_facebook_jobs():
                 row_number
             )
 
-
     for row_number in reversed(
         delete_rows
     ):
@@ -3643,7 +3694,6 @@ def remove_old_facebook_jobs():
         worksheet.delete_rows(
             row_number
         )
-
 
     print(
         f"Removed "
@@ -3660,15 +3710,14 @@ def get_existing_ids():
 
     rows = worksheet.get_all_values()
 
-
     if len(rows) <= 1:
-
         return set()
-
 
     return {
 
-        clean_text(row[0])
+        clean_text(
+            row[0]
+        )
 
         for row in rows[1:]
 
@@ -3692,11 +3741,9 @@ def upload_jobs(jobs):
 
         return 0
 
-
     existing_ids = (
         get_existing_ids()
     )
-
 
     now = datetime.now(
         timezone.utc
@@ -3704,11 +3751,9 @@ def upload_jobs(jobs):
         "%Y-%m-%d %H:%M UTC"
     )
 
-
     rows_to_add = []
 
     seen = set()
-
 
     for _, job in jobs.iterrows():
 
@@ -3718,26 +3763,18 @@ def upload_jobs(jobs):
             )
         )
 
-
         if not job_id:
-
             continue
-
 
         if job_id in existing_ids:
-
             continue
-
 
         if job_id in seen:
-
             continue
-
 
         seen.add(
             job_id
         )
-
 
         rows_to_add.append([
 
@@ -3793,6 +3830,9 @@ def upload_jobs(jobs):
             # Review status
             REVIEW_PENDING,
 
+            # Review reason
+            "",
+
             clean_text(
                 job.get(
                     "fresher_friendly"
@@ -3837,7 +3877,6 @@ def upload_jobs(jobs):
 
         ])
 
-
     if not rows_to_add:
 
         print()
@@ -3846,7 +3885,6 @@ def upload_jobs(jobs):
         )
 
         return 0
-
 
     worksheet.append_rows(
 
@@ -3857,14 +3895,12 @@ def upload_jobs(jobs):
 
     )
 
-
     print()
     print(
         f"Added "
         f"{len(rows_to_add)} "
         f"new jobs."
     )
-
 
     return len(rows_to_add)
 
@@ -3881,47 +3917,46 @@ def main():
     print("BANGLADESH AI/ML + CODING/IT EDITION")
     print("=" * 70)
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # SHEET
-    # ========================================================
+    # --------------------------------------------------------
 
     setup_sheet()
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # HUMAN FEEDBACK
     #
-    # IMPORTANT:
-    # Run this BEFORE collecting new jobs.
+    # This happens BEFORE new scraping.
     #
-    # If you marked something "Not Related"
-    # in the previous run, it will now be:
+    # If you previously marked:
     #
-    # 1. Saved to feedback.json
-    # 2. Removed from Google Sheets
-    # 3. Used for future filtering
+    # Review Status = Not Related
     #
-    # ========================================================
+    # and selected a Review Reason,
+    # the system:
+    #
+    # 1. Stores the rejection
+    # 2. Stores the reason
+    # 3. Learns category-specific patterns
+    # 4. Removes the job from the sheet
+    #
+    # --------------------------------------------------------
 
     process_review_feedback()
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # OLD FACEBOOK CLEANUP
-    # ========================================================
+    # --------------------------------------------------------
 
     remove_old_facebook_jobs()
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # STAGE 1
-    # ========================================================
+    # --------------------------------------------------------
 
     raw_job_boards = (
         collect_job_board_jobs()
     )
-
 
     filtered_job_boards = (
         filter_job_board_jobs(
@@ -3929,88 +3964,91 @@ def main():
         )
     )
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # STAGE 2
-    # ========================================================
+    # --------------------------------------------------------
 
     facebook_jobs = (
         collect_facebook_jobs()
     )
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # COMBINE
-    # ========================================================
+    # --------------------------------------------------------
 
     all_data = (
-
         filtered_job_boards
         + facebook_jobs
-
     )
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # PREPARE
-    # ========================================================
+    # --------------------------------------------------------
 
     jobs = prepare_jobs(
         all_data
     )
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # UPLOAD
-    # ========================================================
+    # --------------------------------------------------------
 
     new_jobs = upload_jobs(
         jobs
     )
 
-
-    # ========================================================
+    # --------------------------------------------------------
     # SUMMARY
-    # ========================================================
+    # --------------------------------------------------------
 
     print()
     print("=" * 70)
     print("COMPLETED")
     print("=" * 70)
 
-
     print(
         f"Processed: "
         f"{len(jobs)}"
     )
-
 
     print(
         f"New jobs added: "
         f"{new_jobs}"
     )
 
-
     feedback = load_feedback()
-
 
     print(
         f"Feedback examples: "
         f"{len(feedback['rejected_jobs'])}"
     )
 
+    print()
 
     print(
-        f"Learned patterns: "
-        f"{len(feedback['learned_patterns'])}"
+        "Feedback statistics:"
     )
 
+    for reason in REVIEW_REASONS:
+
+        count = feedback[
+            "statistics"
+        ].get(
+            reason,
+            0
+        )
+
+        if count:
+
+            print(
+                f"  {reason}: {count}"
+            )
 
     print()
+
     print(
         "Target categories:"
     )
-
 
     print(
         "  ✓ AI / ML"
@@ -4044,12 +4082,11 @@ def main():
         "  ✓ Coding / Programming Mentor"
     )
 
-
     print()
+
     print(
         "Filters active:"
     )
-
 
     print(
         "  ✓ Bangladesh location required"
@@ -4084,15 +4121,13 @@ def main():
     )
 
     print(
-        "  ✓ Old Facebook posts removed"
+        "  ✓ Old Facebook jobs removed"
     )
 
     print(
-        "  ✓ Human feedback learning enabled"
+        "  ✓ Reason-based feedback learning enabled"
     )
 
-
-    print()
     print("=" * 70)
 
 
@@ -4101,5 +4136,4 @@ def main():
 # ============================================================
 
 if __name__ == "__main__":
-
     main()
